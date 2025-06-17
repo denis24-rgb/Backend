@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Correo Confirmado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 10%;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h2>✅ ¡Correo confirmado correctamente!</h2>
+    <p>Ahora puedes continuar con el registro en la aplicación.</p>
+    <p id="correoValor" style="display:none" th:text="${correo}"></p>
+    <button onclick="continuarRegistro()">Continuar Registro</button>
+
+    <script>
+        function continuarRegistro() {
+            const correo = document.getElementById("correoValor").innerText;
+            console.log("Correo a redirigir: ", correo); // Para verificar en consola
+            window.location.href = "myapp://registro_usuario?email=" + correo;
+        }
+
+    </script>
+    
+</body>
+</html>

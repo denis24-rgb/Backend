@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Nuevo Dispositivo Confirmado</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f8f9fa;
+    }
+
+    h2 {
+      color: #28a745;
+    }
+
+    .mensaje {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .boton-deshabilitado {
+      margin-top: 30px;
+      padding: 12px 24px;
+      background-color: #cccccc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body onload="redirigirApp()">
+  <h2>✅ ¡Nuevo acceso confirmado!</h2>
+  <p>Tu correo fue verificado correctamente.</p>
+
+  <div class="mensaje">
+    Si no eres redirigido automáticamente, abre tu aplicación manualmente.
+  </div>
+
+ <script>
+  function redirigirApp() {
+    const correo = "[[${correo}]]";
+    const tokenSesion = "[[${tokenSesion}]]";
+    window.location.href = "myapp://nuevo-dispositivo-confirmado?email=" + encodeURIComponent(correo) + "&tokenSesion=" + tokenSesion;
+  }
+  window.onload = redirigirApp;
+</script>
+</body>
+
+</html>

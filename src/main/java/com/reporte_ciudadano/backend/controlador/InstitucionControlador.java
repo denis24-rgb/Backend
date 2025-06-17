@@ -1,0 +1,74 @@
+package com.reporte_ciudadano.backend.controlador;
+
+import com.reporte_ciudadano.backend.modelo.Institucion;
+import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
+import com.reporte_ciudadano.backend.servicio.InstitucionServicio;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/instituciones")
+@CrossOrigin(origins = "*")
+public class InstitucionControlador {
+
+    @Autowired
+    private InstitucionServicio servicio;
+
+    @Autowired
+    private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
+
+    @GetMapping
+    public List<Institucion> listar() {
+        return servicio.listar();
+    }
+
+    @GetMapping("/{id}")
+    public Optional<Institucion> obtenerPorId(@PathVariable Long id) {
+        return servicio.obtenerPorId(id);
+    }
+
+    @PostMapping
+    public Institucion crear(@RequestBody Institucion institucion) {
+        return servicio.guardar(institucion);
+    }
+
+    @PutMapping("/{id}")
+    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
+        return servicio.obtenerPorId(id).map(institucion -> {
+            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
+            institucion.setContrasena(nuevaInstitucion.getContrasena());
+            institucion.setTelefono(nuevaInstitucion.getTelefono());
+            institucion.setDireccion(nuevaInstitucion.getDireccion());
+            institucion.setCorreo(nuevaInstitucion.getCorreo());
+            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
+            return servicio.guardar(institucion);
+        }).orElseGet(() -> {
+            nuevaInstitucion.setId(id);
+            return servicio.guardar(nuevaInstitucion);
+        });
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(@PathVariable Long id) {
+        servicio.eliminar(id);
+    }
+
+    @GetMapping("/por-tipo")
+    public ResponseEntity<?> obtenerInstitucionPorTipo(@RequestParam Long tipoId) {
+        List<Institucion> instituciones = institucionTipoReporteRepositorio.findInstitucionesPorTipoReporteId(tipoId);
+
+        if (instituciones.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("No se encontraron instituciones para este tipo de reporte");
+        }
+
+        // Puedes retornar la primera si es 1 a 1, o toda la lista si permite varias
+        return ResponseEntity.ok(instituciones.get(0)); // o simplemente: return ResponseEntity.ok(instituciones);
+    }
+
+}
