@@ -38,21 +38,21 @@ public class InstitucionControlador {
         return institucionServicio.guardar(institucion);
     }
 
-//    @PutMapping("/{id}")
-//    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
-//        return servicio.obtenerPorId(id).map(institucion -> {
-//            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
-//            institucion.setContrasena(nuevaInstitucion.getContrasena());
-//            institucion.setTelefono(nuevaInstitucion.getTelefono());
-//            institucion.setDireccion(nuevaInstitucion.getDireccion());
-//            institucion.setCorreo(nuevaInstitucion.getCorreo());
-//            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
-//            return servicio.guardar(institucion);
-//        }).orElseGet(() -> {
-//            nuevaInstitucion.setId(id);
-//            return servicio.guardar(nuevaInstitucion);
-//        });
-//    }
+    @PutMapping("/{id}")
+    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
+        return servicio.obtenerPorId(id).map(institucion -> {
+            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
+            institucion.setContrasena(nuevaInstitucion.getContrasena());
+            institucion.setTelefono(nuevaInstitucion.getTelefono());
+            institucion.setDireccion(nuevaInstitucion.getDireccion());
+            institucion.setCorreo(nuevaInstitucion.getCorreo());
+            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
+            return servicio.guardar(institucion);
+        }).orElseGet(() -> {
+            nuevaInstitucion.setId(id);
+            return servicio.guardar(nuevaInstitucion);
+        });
+    }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {

@@ -37,4 +37,8 @@ public class TipoReporteServicio {
     public Optional<TipoReporte> obtenerPorId(Long id) {
         return tipoRepo.findById(id);
     }
+    public boolean existeNombre(String nombre) {
+        return tipoRepo.existsByNombre(nombre);
+    }
+
 }

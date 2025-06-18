@@ -18,16 +18,11 @@ public class TipoReporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Column(name = "nombre_tipo")
-//    private String nombreTipo;
 
     @Column(nullable = false, unique = true)
     private String nombre;
 
-//    @ManyToOne
-//    @JoinColumn(name = "categoria_id")
-//    @JsonBackReference
-//    private CategoriaReporte categoria;
+
 
     @Column(nullable = false)
     private String icono;
