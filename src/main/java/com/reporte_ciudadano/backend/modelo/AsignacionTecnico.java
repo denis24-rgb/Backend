@@ -14,7 +14,7 @@ public class AsignacionTecnico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "reporte_id", nullable = false)
     private Reporte reporte;
 
@@ -24,4 +24,9 @@ public class AsignacionTecnico {
 
     @Column(name = "fecha_asignacion", nullable = false)
     private LocalDateTime fechaAsignacion;
+    @PrePersist
+    public void prePersist() {
+        this.fechaAsignacion = LocalDateTime.now();
+    }
+
 }
