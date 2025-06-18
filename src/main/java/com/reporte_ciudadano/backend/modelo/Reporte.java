@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Entity
 @Table(name = "reporte")
@@ -42,5 +43,8 @@ public class Reporte {
     private LocalTime hora;
 
     private String estado = "recibido";
+
+    @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HistorialEstado> historialEstados;
 
 }

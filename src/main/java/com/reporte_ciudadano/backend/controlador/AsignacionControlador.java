@@ -1,7 +1,5 @@
 package com.reporte_ciudadano.backend.controlador;
 
-
-
 import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
 import com.reporte_ciudadano.backend.modelo.Reporte;
 import com.reporte_ciudadano.backend.modelo.RolInstitucional;
@@ -64,6 +62,7 @@ public class AsignacionControlador {
         asignacionServicio.eliminar(id);
         return "redirect:/asignaciones";
     }
+
     @GetMapping("/reportes")
 
     public String verAsignacionReportes(Model model, java.security.Principal principal) {
@@ -91,7 +90,6 @@ public class AsignacionControlador {
                             u.getInstitucion().getId().equals(institucionId))
                     .collect(Collectors.toList());
         }
-
 
         model.addAttribute("reportes", reportes);
         model.addAttribute("tecnicos", tecnicos);
