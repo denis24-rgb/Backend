@@ -2,8 +2,12 @@ package com.reporte_ciudadano.backend.modelo;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.List;
 
 @Entity
 @Table(name = "tipos_reporte")
@@ -14,12 +18,27 @@ public class TipoReporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre_tipo")
-    private String nombreTipo;
+//    @Column(name = "nombre_tipo")
+//    private String nombreTipo;
 
-    @ManyToOne
-    @JoinColumn(name = "categoria_id")
-    @JsonBackReference
-    private CategoriaReporte categoria;
+    @Column(nullable = false, unique = true)
+    private String nombre;
 
+//    @ManyToOne
+//    @JoinColumn(name = "categoria_id")
+//    @JsonBackReference
+//    private CategoriaReporte categoria;
+
+    @Column(nullable = false)
+    private String icono;
+
+    // Relación con los reportes individuales
+    @OneToMany(mappedBy = "tipoReporte")
+    @JsonIgnoreProperties("tipoReporte") // evita recursión infinita
+    private List<Reporte> reportes;
+
+    // Nueva relación con institución y categoría (tabla intermedia)
+    @OneToMany(mappedBy = "tipoReporte")
+    @JsonManagedReference
+    private List<InstitucionTipoReporte> asignaciones;
 }

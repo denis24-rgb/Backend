@@ -13,7 +13,7 @@ import lombok.Data;
 
 @Entity
 @Table(name = "institucion_tipo_reporte", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "institucion_id", "tipo_reporte_id" })
+        @UniqueConstraint(columnNames = { "institucion_id", "tipo_reporte_id","categoria_reporte_id" })
 })
 @Data
 public class InstitucionTipoReporte {
@@ -29,4 +29,8 @@ public class InstitucionTipoReporte {
     @ManyToOne
     @JoinColumn(name = "tipo_reporte_id", nullable = false)
     private TipoReporte tipoReporte;
+
+    @ManyToOne
+    @JoinColumn(name = "categoria_reporte_id", nullable = false)
+    private CategoriaReporte categoriaReporte;
 }

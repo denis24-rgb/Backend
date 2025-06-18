@@ -17,7 +17,11 @@ public class CategoriaReporte {
 
     private String nombre;
 
-    @OneToMany(mappedBy = "categoria")
-    @JsonBackReference
-    private List<TipoReporte> tipos;
+//    @OneToMany(mappedBy = "categoria")
+//    @JsonBackReference
+//    private List<TipoReporte> tipos;//jhoel debe acomodar para su funcionamiento para el siguiente
+
+
+    @OneToMany(mappedBy = "categoriaReporte")
+    private List<InstitucionTipoReporte> tiposAsignados;
 }
