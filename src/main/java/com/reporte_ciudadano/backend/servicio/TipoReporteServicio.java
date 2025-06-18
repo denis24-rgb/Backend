@@ -45,9 +45,6 @@ public class TipoReporteServicio {
     public List<TipoReporte> listarPorCategoria(Long categoriaId) {
         return institucionTipoReporteRepositorio.findTiposReportePorCategoria(categoriaId);
 
-    public boolean existeNombre(String nombre) {
-        return tipoRepo.existsByNombre(nombre);
-
     }
 
 }

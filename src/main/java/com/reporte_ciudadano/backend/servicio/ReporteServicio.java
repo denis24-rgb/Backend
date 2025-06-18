@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -33,8 +34,6 @@ public class ReporteServicio {
     @Autowired
     private NotificacionServicio notificacionServicio;
 
-    @Autowired
-    private EstadoReporteRepositorio estadoReporteRepositorio;
     private static final List<String> ESTADOS_VALIDOS = List.of(
             "recibido", "en proceso", "resuelto", "cerrado");
 
@@ -98,51 +97,45 @@ public class ReporteServicio {
         return guardado;
     }
 
+    public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
+        // Verificar si el estado es válido
+        if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
+            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
+        }
+        Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
+        if (reporte == null)
+            return null;
 
-    // public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
-    // // Verificar si el estado es válido
-    // if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
-    // throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
-    // }
-    // Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
-    // if (reporte == null)
-    // return null;
-    //
-    // String estadoAnterior = reporte.getEstado();
-    // reporte.setEstado(nuevoEstado);
-    // reporteRepositorio.save(reporte);
-    //
-    // // Guardar historial del cambio
-    // HistorialEstado historial = new HistorialEstado();
-    // historial.setReporte(reporte);
-    // historial.setEstadoAnterior(estadoAnterior);
-    // historial.setEstadoNuevo(nuevoEstado);
-    // historialEstadoRepositorio.save(historial);
-    //
-    // // ✅ Obtener tipo de reporte con verificación nula
-    // String tipo = (reporte.getTipoReporte() != null &&
-    // reporte.getTipoReporte().getNombreTipo() != null)
-    // ? reporte.getTipoReporte().getNombreTipo()
-    // : "desconocido";
-    //
-    // // ✅ Armar mensaje con íconos y tipo
-    // String mensaje = switch (nuevoEstado.toLowerCase()) {
-    // case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + "' está siendo
-    // atendido por la institución: "
-    // + reporte.getInstitucion().getNombreInstitucion();
-    // case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto.
-    // ¡Gracias por tu colaboración!";
-    // case "cerrado" ->
-    // "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema,
-    // repórtalo nuevamente.";
-    // default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a:
-    // " + nuevoEstado;
-    // };
-    // // guardar notificación con relación al reporte
-    // notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
-    // return reporte;
-    // }
+        String estadoAnterior = reporte.getEstado();
+        reporte.setEstado(nuevoEstado);
+        reporteRepositorio.save(reporte);
 
+        // Guardar historial del cambio
+        HistorialEstado historial = new HistorialEstado();
+        historial.setReporte(reporte);
+        historial.setEstadoAnterior(estadoAnterior);
+        historial.setEstadoNuevo(nuevoEstado);
+        historialEstadoRepositorio.save(historial);
+
+        // ✅ Obtener tipo de reporte con verificación nula
+        String tipo = (reporte.getTipoReporte() != null &&
+                reporte.getTipoReporte().getNombre() != null)
+                        ? reporte.getTipoReporte().getNombre()
+                        : "desconocido";
+
+        // ✅ Armar mensaje con íconos y tipo
+        String mensaje = switch (nuevoEstado.toLowerCase()) {
+            case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + " está siendo atendido por la institución: "
+                    + reporte.getInstitucion().getNombre();
+            case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto. ¡Gracias por tu colaboración!";
+            case "cerrado" ->
+                "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema, repórtalo nuevamente.";
+            default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a: " + nuevoEstado;
+        };
+        // guardar notificación con relación al reporte
+        notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
+        return reporte;
+    }
 
     public Reporte buscarPorId(Long id) {
         return reporteRepositorio.findById(id).orElse(null);
@@ -164,6 +157,40 @@ public class ReporteServicio {
         return historialEstadoRepositorio.findByReporteIdOrderByFechaCambioAsc(reporteId);
     }
 
+    public Optional<Reporte> obtenerPorId(Long id) {
+        return reporteRepositorio.findById(id);
+    }
 
+    public List<Reporte> listarPorEstados(String... estados) {
+        return reporteRepositorio.findByEstadoIn(List.of(estados));
+    }
+
+    public List<Reporte> listarPorEstadosYInstitucion(Long institucionId, String... estados) {
+        return reporteRepositorio.findByInstitucionIdAndEstadoIn(institucionId, List.of(estados));
+    }
+
+    public long contarReportes() {
+        return reporteRepositorio.count();
+    }
+
+    public List<Reporte> obtenerConUbicacion() {
+        return reporteRepositorio.findByLatitudIsNotNullAndLongitudIsNotNull();
+    }
+
+    public long contarPorEstado(String estado) {
+        return reporteRepositorio.countByEstadoIgnoreCase(estado);
+    }
+
+    public List<Reporte> obtenerConUbicacionPorInstitucion(Long institucionId) {
+        return reporteRepositorio.findByInstitucionIdAndUbicacionIsNotNull(institucionId);
+    }
+
+    public int contarAsignacionesPendientesPorInstitucion(Long institucionId) {
+        return reporteRepositorio.countByInstitucionIdAndEstado(institucionId, "recibido");
+    }
+
+    public int contarReportesActivosPorInstitucion(Long institucionId) {
+        return reporteRepositorio.countByInstitucionIdAndEstadoNot(institucionId, "cerrado");
+    }
 
 }

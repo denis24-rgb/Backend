@@ -11,21 +11,25 @@ import java.time.LocalDateTime;
 @Data
 public class HistorialEstado {
 
-    @Id
+     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // 🔗 Relación con el reporte al que pertenece el historial
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporte_id", nullable = false)
     private Reporte reporte;
 
-    @Column(name = "estado_anterior")
+    // 📄 Estado anterior antes del cambio
+    @Column(name = "estado_anterior", nullable = false, length = 50)
     private String estadoAnterior;
 
-    @Column(name = "estado_nuevo")
+    // 📄 Estado nuevo después del cambio
+    @Column(name = "estado_nuevo", nullable = false, length = 50)
     private String estadoNuevo;
 
+    // 🕒 Fecha automática de cambio
     @CreationTimestamp
-    @Column(name = "fecha_cambio", updatable = false)
+    @Column(name = "fecha_cambio", nullable = false, updatable = false)
     private LocalDateTime fechaCambio;
 }

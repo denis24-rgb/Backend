@@ -11,24 +11,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class EstadisticasControlador {
 
     @Autowired
-    private UsuarioInstitucionalServicio usuarioServicio;
-
-    @Autowired
     private ReporteServicio reporteServicio;
 
     @GetMapping("/estadisticas")
     public String mostrarEstadisticas(Model model) {
-        long pendientes = reporteServicio.contarPorEstado("Pendiente");
-        long revision = reporteServicio.contarPorEstado("En Revisión");
-        long resueltos = reporteServicio.contarPorEstado("Resuelto");
-        long cerrados = reporteServicio.contarPorEstado("Cerrado");
+        long pendientes = reporteServicio.contarPorEstado("recibido");
+        long revision = reporteServicio.contarPorEstado("en proceso");
+        long resueltos = reporteServicio.contarPorEstado("resuelto");
+        long cerrados = reporteServicio.contarPorEstado("cerrado");
 
         long total = pendientes + revision + resueltos + cerrados;
 
-        model.addAttribute("pendientes", pendientes);
-        model.addAttribute("revision", revision);
+        model.addAttribute("recibido", pendientes);
+        model.addAttribute("en proceso", revision);
         model.addAttribute("resueltos", resueltos);
-        model.addAttribute("cerrados", cerrados);
+        model.addAttribute("cerrado", cerrados);
         model.addAttribute("total", total);
 
         return "estadisticas";
