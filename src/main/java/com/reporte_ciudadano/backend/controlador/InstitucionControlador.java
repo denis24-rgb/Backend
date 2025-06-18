@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.thymeleaf.Thymeleaf;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ public class InstitucionControlador {
     @Autowired
     private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
+    // ✅ API REST para obtener todas las instituciones
     @GetMapping
     public List<Institucion> listar() {
         return institucionServicio.listarTodas();
@@ -38,21 +40,19 @@ public class InstitucionControlador {
         return institucionServicio.guardar(institucion);
     }
 
-//    @PutMapping("/{id}")
-//    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
-//        return servicio.obtenerPorId(id).map(institucion -> {
-//            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
-//            institucion.setContrasena(nuevaInstitucion.getContrasena());
-//            institucion.setTelefono(nuevaInstitucion.getTelefono());
-//            institucion.setDireccion(nuevaInstitucion.getDireccion());
-//            institucion.setCorreo(nuevaInstitucion.getCorreo());
-//            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
-//            return servicio.guardar(institucion);
-//        }).orElseGet(() -> {
-//            nuevaInstitucion.setId(id);
-//            return servicio.guardar(nuevaInstitucion);
-//        });
-//    }
+    @PutMapping("/{id}")
+    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
+        return institucionServicio.obtenerPorId(id).map(institucion -> {
+            institucion.setNombre(nuevaInstitucion.getNombre());
+            institucion.setCorreoInstitucional(nuevaInstitucion.getCorreoInstitucional());
+            institucion.setZona(nuevaInstitucion.getZona());
+            institucion.setActivo(nuevaInstitucion.isActivo());
+            return institucionServicio.guardar(institucion);
+        }).orElseGet(() -> {
+            nuevaInstitucion.setId(id);
+            return institucionServicio.guardar(nuevaInstitucion);
+        });
+    }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
@@ -72,12 +72,11 @@ public class InstitucionControlador {
         return ResponseEntity.ok(instituciones.get(0)); // o simplemente: return ResponseEntity.ok(instituciones);
     }
 
-
-
-    @GetMapping
+    // / ✅ Vista con Thymeleaf para listar instituciones
+    @GetMapping("/panel/superadmin")
     public String listarInstituciones(Model model) {
         model.addAttribute("instituciones", institucionServicio.listarTodas());
-        return "instituciones"; // se refiere a instituciones.html en templates/
+        return "instituciones"; // templates/instituciones.html
     }
 
     // Mostrar formulario de nueva institución

@@ -9,6 +9,8 @@ import java.util.List;
 @Repository
 public interface InstitucionRepositorio extends JpaRepository<Institucion, Long> {
     boolean existsByNombre(String nombre);
+
     boolean existsByCorreoInstitucional(String correoInstitucional);
+
     List<Institucion> findAllByOrderByNombreAsc();
 }

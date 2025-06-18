@@ -11,23 +11,11 @@ import java.util.List;
 @Data
 public class Institucion {
 
-
-//    private String usernombre;
-//    private String contrasena;
-//    private String telefono;
-      //private String direccion;
-//    private String correo;
-
-//    @Column(name = "nombre_institucion")
-//    private String nombreInstitucion;
-
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)//denis cambia lo necesaio para usar esto en vez de nombreInstitucion
+    @Column(nullable = false, unique = true)
     private String nombre;
 
     @Column(name = "correo_institucional", nullable = false, unique = true)
@@ -37,7 +25,9 @@ public class Institucion {
     private String zona;
 
     @Column(nullable = false)
-    private boolean activo = true;
+    private boolean activo;
+
+    // Relaciones
 
     @OneToMany(mappedBy = "institucion")
     @JsonManagedReference
