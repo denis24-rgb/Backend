@@ -1,0 +1,54 @@
+body {
+    background-color: #fafafa;
+}
+
+.estado-btn {
+    margin-right: 10px;
+}
+
+.card-reporte {
+    margin-bottom: 15px;
+    border-left: 5px solid #0d6efd;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+#mapa {
+    height: 500px;
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+}
+
+.titulo-card {
+    font-weight: bold;
+}
+
+.seccion-mapa {
+    padding: 15px;
+}
+
+form {
+    background-color: #f0f2f5;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+form .form-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.tarjeta-desplegable {
+    cursor: pointer;
+    transition: box-shadow 0.3s ease;
+}
+.tarjeta-desplegable:hover {
+    box-shadow: 0 0 10px rgba(0,0,0,0.15);
+}
+
+.contenido-card {
+    transition: all 0.3s ease;
+    padding: 10px;
+    border-top: 1px solid #ccc;
+}

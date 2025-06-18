@@ -12,22 +12,26 @@ import java.util.Optional;
 public class InstitucionServicio {
 
     @Autowired
-    private InstitucionRepositorio repositorio;
+    private InstitucionRepositorio institucionRepositorio;
 
-    public List<Institucion> listar() {
-        return repositorio.findAll();
+    public List<Institucion> listarTodas() {
+        return institucionRepositorio.findAll();
     }
 
     public Optional<Institucion> obtenerPorId(Long id) {
-        return repositorio.findById(id);
+        return institucionRepositorio.findById(id);
     }
 
     public Institucion guardar(Institucion institucion) {
-        return repositorio.save(institucion);
+        return institucionRepositorio.save(institucion);
     }
 
     public void eliminar(Long id) {
-        repositorio.deleteById(id);
+        institucionRepositorio.deleteById(id);
+    }
+
+    public long contarInstituciones() {
+        return institucionRepositorio.count();
     }
 
 }

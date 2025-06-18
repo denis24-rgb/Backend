@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel del Técnico</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/tecnico.css}">
+</head>
+<body>
+<div class="container-fluid mt-4">
+    <h3 class="mb-4">Mis asignaciones</h3>
+
+    <!-- Filtros por estado -->
+    <div class="d-flex mb-3">
+        <button class="btn btn-outline-primary estado-btn" onclick="filtrarPorEstado('RECIBIDO')">
+            Pendientes (<span id="count-pendientes">0</span>)
+        </button>
+        <button class="btn btn-outline-warning estado-btn" onclick="filtrarPorEstado('EN PROCESO')">
+            En proceso (<span id="count-proceso">0</span>)
+        </button>
+        <button class="btn btn-outline-success estado-btn" onclick="filtrarPorEstado('RESUELTO')">
+        Finalizados (<span id="count-finalizados">0</span>)
+        </button>
+    </div>
+
+    <div class="row">
+        <!-- Columna de tarjetas -->
+        <div class="col-md-5" id="contenedor-reportes">
+            <div th:each="reporte : ${reportes}" class="card card-reporte mb-3">
+                <div class="card-body">
+
+                    <h5 class="titulo-card" th:text="${reporte.descripcion}">Título del Reporte</h5>
+
+                    <p><strong>Ubicación:</strong> <span th:text="${reporte.ubicacion}">Ubicación</span></p>
+
+                    <p><strong>Fecha y hora:</strong>
+                        <span th:text="${#temporals.format(reporte.fechaReporte, 'dd/MM/yyyy HH:mm')}">01/01/2025 08:00</span>
+                    </p>
+
+                    <p><strong>Estado:</strong> <span th:text="${reporte.estado.nombre}">RECIBIDO</span></p>
+
+                    <!-- Botón "Tomar" si está en RECIBIDO -->
+                    <div th:if="${reporte.estado.nombre.equals('RECIBIDO')}" class="mt-2">
+                        <button class="btn btn-sm btn-warning btn-tomar"
+                                th:data-id="${reporte.id}">Tomar reporte</button>
+                    </div>
+
+                    <!-- Formulario si está EN PROCESO -->
+                    <div th:if="${reporte.estado.nombre.equals('EN PROCESO')}" class="mt-3">
+                        <form class="form-finalizar">
+                            <input type="hidden" name="reporteId" th:value="${reporte.id}" />
+                            <input type="hidden" name="nuevoEstado" value="RESUELTO" />
+                            <div class="mb-2">
+                                <label class="form-label">Comentario del técnico:</label>
+                                <textarea name="comentario" class="form-control form-control-sm" rows="2"
+                                          placeholder="Breve descripción de la intervención..." required></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-sm btn-info btn-ver-mapa"
+                                        th:data-id="${reporte.id}">Ver en mapa</button>
+                                <button type="submit" class="btn btn-sm btn-success">Finalizar reporte</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna del mapa -->
+        <div class="col-md-7 seccion-mapa">
+            <div id="mapa">[Aquí se cargará el mapa con reportes]</div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/filtrado-reportes.js}"></script>
+<script th:src="@{/js/tecnico-panel.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

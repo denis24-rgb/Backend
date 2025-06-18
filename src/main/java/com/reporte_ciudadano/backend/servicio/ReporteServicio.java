@@ -105,44 +105,44 @@ public class ReporteServicio {
         return guardado;
     }
 
-    public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
-        // Verificar si el estado es válido
-        if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
-            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
-        }
-        Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
-        if (reporte == null)
-            return null;
-
-        String estadoAnterior = reporte.getEstado();
-        reporte.setEstado(nuevoEstado);
-        reporteRepositorio.save(reporte);
-
-        // Guardar historial del cambio
-        HistorialEstado historial = new HistorialEstado();
-        historial.setReporte(reporte);
-        historial.setEstadoAnterior(estadoAnterior);
-        historial.setEstadoNuevo(nuevoEstado);
-        historialEstadoRepositorio.save(historial);
-
-        // ✅ Obtener tipo de reporte con verificación nula
-        String tipo = (reporte.getTipoReporte() != null && reporte.getTipoReporte().getNombreTipo() != null)
-                ? reporte.getTipoReporte().getNombreTipo()
-                : "desconocido";
-
-        // ✅ Armar mensaje con íconos y tipo
-        String mensaje = switch (nuevoEstado.toLowerCase()) {
-            case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + "' está siendo atendido por la institución: "
-                    + reporte.getInstitucion().getNombreInstitucion();
-            case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto. ¡Gracias por tu colaboración!";
-            case "cerrado" ->
-                "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema, repórtalo nuevamente.";
-            default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a: " + nuevoEstado;
-        };
-        // guardar notificación con relación al reporte
-        notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
-        return reporte;
-    }
+//    public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
+//        // Verificar si el estado es válido
+//        if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
+//            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
+//        }
+//        Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
+//        if (reporte == null)
+//            return null;
+//
+//        String estadoAnterior = reporte.getEstado();
+//        reporte.setEstado(nuevoEstado);
+//        reporteRepositorio.save(reporte);
+//
+//        // Guardar historial del cambio
+//        HistorialEstado historial = new HistorialEstado();
+//        historial.setReporte(reporte);
+//        historial.setEstadoAnterior(estadoAnterior);
+//        historial.setEstadoNuevo(nuevoEstado);
+//        historialEstadoRepositorio.save(historial);
+//
+//        // ✅ Obtener tipo de reporte con verificación nula
+//        String tipo = (reporte.getTipoReporte() != null && reporte.getTipoReporte().getNombreTipo() != null)
+//                ? reporte.getTipoReporte().getNombreTipo()
+//                : "desconocido";
+//
+//        // ✅ Armar mensaje con íconos y tipo
+//        String mensaje = switch (nuevoEstado.toLowerCase()) {
+//            case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + "' está siendo atendido por la institución: "
+//                    + reporte.getInstitucion().getNombreInstitucion();
+//            case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto. ¡Gracias por tu colaboración!";
+//            case "cerrado" ->
+//                "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema, repórtalo nuevamente.";
+//            default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a: " + nuevoEstado;
+//        };
+//        // guardar notificación con relación al reporte
+//        notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
+//        return reporte;
+//    }
 
     public Reporte buscarPorId(Long id) {
         return reporteRepositorio.findById(id).orElse(null);

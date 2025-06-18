@@ -1,0 +1,46 @@
+body {
+    background-color: #1c1c2e;
+    color: #f1f1f1;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 1280px;
+    margin: 60px auto 40px;
+    padding: 30px;
+    background-color: #2a2a40;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 208, 255, 0.1);
+}
+
+h2 {
+    color: #00d0ff;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+/* Botón Volver arriba */
+.btn-outline-primary {
+    color: #00d0ff;
+    border-color: #00d0ff;
+    transition: 0.3s ease;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+.btn-outline-primary:hover {
+    background-color: #00d0ff;
+    color: #1c1c2e;
+    border-color: #00d0ff;
+}
+
+/* Canvas con fondo blanco y bordes suaves */
+canvas {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    width: 100%;
+    max-height: 400px;
+}

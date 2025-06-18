@@ -1,0 +1,32 @@
+body {
+    background-color: #f4f7fb;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.card-header h4 {
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.form-control {
+    font-size: 0.95rem;
+}
+
+.btn-info {
+    font-weight: bold;
+    padding: 8px 16px;
+}
+
+.btn-secondary {
+    font-weight: bold;
+    padding: 8px 16px;
+}
+
+input[readonly] {
+    background-color: #e9ecef;
+    font-style: italic;
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Reportes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">📋 Reportes Recibidos</h3>
+        </div>
+        <div class="card-body">
+            <a href="/reportes/nuevo" class="btn btn-success mb-3">➕ Nuevo Reporte</a>
+
+            <table class="table table-bordered table-hover">
+                <thead class="table-secondary">
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Tipo</th>
+                    <th>Institución</th>
+                    <th>Cambiar Estado</th>
+                    <th>Asignar Técnico</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="reporte : ${reportes}">
+                    <td th:text="${reporte.id}">1</td>
+                    <td th:text="${reporte.descripcion}">Descripción</td>
+                    <td th:text="${#temporals.format(reporte.fechaReporte, 'dd/MM/yyyy HH:mm')}">02/06/2025</td>
+                    <td th:text="${reporte.estado.nombre}">Pendiente</td>
+                    <td th:text="${reporte.tipoReporte.nombre}">Corte de Agua</td>
+                    <td th:text="${reporte.institucion.nombre}">COSPUGEBUL</td>
+                    <td>
+                        <form th:action="@{/reportes/guardar-estado}" method="post">
+                            <input type="hidden" name="id" th:value="${reporte.id}" />
+                            <select class="form-select form-select-sm" name="estado.id">
+                                <option th:each="est : ${estados}"
+                                        th:value="${est.id}"
+                                        th:text="${est.nombre}"
+                                        th:selected="${est.id} == ${reporte.estado.id}">
+                                </option>
+                            </select>
+                            <div class="d-grid">
+                                <button class="btn btn-sm btn-primary mt-1" type="submit">Cambiar</button>
+                            </div>
+                        </form>
+                    </td>
+
+                    <td>
+                        <form th:action="@{/reportes/guardar-asignacion}" method="post">
+                            <input type="hidden" name="id" th:value="${reporte.id}" />
+                            <select class="form-select form-select-sm" name="tecnico.id">
+                                <option th:each="tec : ${tecnicos}"
+                                        th:value="${tec.id}"
+                                        th:text="${tec.usuario}"
+                                        th:selected="${reporte.tecnico != null and tec.id == reporte.tecnico.id}">
+                                </option>
+                            </select>
+                            <div class="d-grid">
+                                <button class="btn btn-sm btn-success mt-1" type="submit">Asignar</button>
+                            </div>
+                        </form>
+                    </td>
+                    <td>
+                        <a th:href="@{/reportes/eliminar/{id}(id=${reporte.id})}" class="btn btn-danger btn-sm">🗑 Eliminar</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(reportes)}">
+                    <td colspan="9" class="text-center text-muted">No hay reportes aún.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
