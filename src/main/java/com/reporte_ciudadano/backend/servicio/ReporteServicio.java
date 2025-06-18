@@ -1,20 +1,11 @@
 package com.reporte_ciudadano.backend.servicio;
 
-import com.reporte_ciudadano.backend.modelo.HistorialEstado;
-import com.reporte_ciudadano.backend.modelo.Institucion;
-import com.reporte_ciudadano.backend.modelo.Notificacion;
-import com.reporte_ciudadano.backend.modelo.Reporte;
-import com.reporte_ciudadano.backend.modelo.TipoReporte;
-import com.reporte_ciudadano.backend.modelo.Usuario;
-import com.reporte_ciudadano.backend.repositorio.HistorialEstadoRepositorio;
-import com.reporte_ciudadano.backend.repositorio.InstitucionRepositorio;
-import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
-import com.reporte_ciudadano.backend.repositorio.ReporteRepositorio;
-import com.reporte_ciudadano.backend.repositorio.TipoReporteRepositorio;
-import com.reporte_ciudadano.backend.repositorio.UsuarioRepositorio;
+import com.reporte_ciudadano.backend.modelo.*;
+import com.reporte_ciudadano.backend.repositorio.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Transactional
@@ -42,6 +33,8 @@ public class ReporteServicio {
     @Autowired
     private NotificacionServicio notificacionServicio;
 
+    @Autowired
+    private EstadoReporteRepositorio estadoReporteRepositorio;
     private static final List<String> ESTADOS_VALIDOS = List.of(
             "recibido", "en proceso", "resuelto", "cerrado");
 
@@ -105,44 +98,44 @@ public class ReporteServicio {
         return guardado;
     }
 
-//    public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
-//        // Verificar si el estado es válido
-//        if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
-//            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
-//        }
-//        Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
-//        if (reporte == null)
-//            return null;
-//
-//        String estadoAnterior = reporte.getEstado();
-//        reporte.setEstado(nuevoEstado);
-//        reporteRepositorio.save(reporte);
-//
-//        // Guardar historial del cambio
-//        HistorialEstado historial = new HistorialEstado();
-//        historial.setReporte(reporte);
-//        historial.setEstadoAnterior(estadoAnterior);
-//        historial.setEstadoNuevo(nuevoEstado);
-//        historialEstadoRepositorio.save(historial);
-//
-//        // ✅ Obtener tipo de reporte con verificación nula
-//        String tipo = (reporte.getTipoReporte() != null && reporte.getTipoReporte().getNombreTipo() != null)
-//                ? reporte.getTipoReporte().getNombreTipo()
-//                : "desconocido";
-//
-//        // ✅ Armar mensaje con íconos y tipo
-//        String mensaje = switch (nuevoEstado.toLowerCase()) {
-//            case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + "' está siendo atendido por la institución: "
-//                    + reporte.getInstitucion().getNombreInstitucion();
-//            case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto. ¡Gracias por tu colaboración!";
-//            case "cerrado" ->
-//                "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema, repórtalo nuevamente.";
-//            default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a: " + nuevoEstado;
-//        };
-//        // guardar notificación con relación al reporte
-//        notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
-//        return reporte;
-//    }
+    public Reporte cambiarEstado(Long idReporte, String nuevoEstado) {
+        // Verificar si el estado es válido
+        if (!ESTADOS_VALIDOS.contains(nuevoEstado.toLowerCase())) {
+            throw new IllegalArgumentException("Estado inválido: " + nuevoEstado);
+        }
+        Reporte reporte = reporteRepositorio.findById(idReporte).orElse(null);
+        if (reporte == null)
+            return null;
+
+        String estadoAnterior = reporte.getEstado();
+        reporte.setEstado(nuevoEstado);
+        reporteRepositorio.save(reporte);
+
+        // Guardar historial del cambio
+        HistorialEstado historial = new HistorialEstado();
+        historial.setReporte(reporte);
+        historial.setEstadoAnterior(estadoAnterior);
+        historial.setEstadoNuevo(nuevoEstado);
+        historialEstadoRepositorio.save(historial);
+
+        //  Obtener tipo de reporte con verificación nula
+        String tipo = (reporte.getTipoReporte() != null && reporte.getTipoReporte().getNombre() != null)
+                ? reporte.getTipoReporte().getNombre()
+                : "desconocido";
+
+        // ✅ Armar mensaje con íconos y tipo
+        String mensaje = switch (nuevoEstado.toLowerCase()) {
+            case "en proceso" -> "✅ Tu reporte de tipo '" + tipo + "' está siendo atendido por la institución: "
+                    + reporte.getInstitucion().getNombre();
+            case "resuelto" -> "🎉 Tu reporte de tipo '" + tipo + "' ha sido resuelto. ¡Gracias por tu colaboración!";
+            case "cerrado" ->
+                "🔒 Tu reporte de tipo '" + tipo + "' fue cerrado. Si persiste el problema, repórtalo nuevamente.";
+            default -> "ℹ️ El estado de tu reporte de tipo '" + tipo + "' ha cambiado a: " + nuevoEstado;
+        };
+        // guardar notificación con relación al reporte
+        notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
+        return reporte;
+    }
 
     public Reporte buscarPorId(Long id) {
         return reporteRepositorio.findById(id).orElse(null);
@@ -159,5 +152,7 @@ public class ReporteServicio {
     public List<HistorialEstado> obtenerHistorialPorReporte(Long reporteId) {
         return historialEstadoRepositorio.findByReporteIdOrderByFechaCambioAsc(reporteId);
     }
+
+
 
 }

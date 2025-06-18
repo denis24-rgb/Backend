@@ -91,10 +91,10 @@ public class ReporteControlador {
         }
     }
 
-//    @PutMapping("/{id}/estado")
-//    public Reporte cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
-//        return servicio.cambiarEstado(id, nuevoEstado);
-//    }
+    @PutMapping("/{id}/estado")
+    public Reporte cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
+        return servicio.cambiarEstado(id, nuevoEstado);
+    }
 
     @GetMapping("/{id}")
     public Reporte obtenerPorId(@PathVariable Long id) {
