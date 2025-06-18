@@ -44,39 +44,30 @@ public class InicioControlador {
         List<Reporte> listaReportes = reporteServicio.obtenerConUbicacionPorInstitucion(institucion.getId());
 
         // 🔧 Obtener técnicos de la institución
-        List<UsuarioInstitucional> tecnicos = usuarioInstitucionalServicio.listarTecnicosPorInstitucion(institucion.getId());
+        List<UsuarioInstitucional> tecnicos = usuarioInstitucionalServicio
+                .listarTecnicosPorInstitucion(institucion.getId());
 
         // Convertir a estructura simplificada para el frontend
         List<Map<String, Object>> reportesMap = listaReportes.stream().map(r -> {
             Map<String, Object> reporteMap = new HashMap<>();
+
             reporteMap.put("id", r.getId());
             reporteMap.put("descripcion", r.getDescripcion());
-            reporteMap.put("latitud", r.getLatitud());
-            reporteMap.put("longitud", r.getLongitud());
-            reporteMap.put("ubicacion", r.getUbicacion());
+            reporteMap.put("estado", r.getEstado()); // Ahora es String directamente
             reporteMap.put("fechaReporte", r.getFechaReporte() != null ? r.getFechaReporte().toString() : null);
+            reporteMap.put("hora", r.getHora() != null ? r.getHora().toString() : null);
+            reporteMap.put("ubicacion", r.getUbicacion());
 
-            // Tipo de reporte
-            Map<String, Object> tipoMap = new HashMap<>();
+            // Relacionales, si están mapeadas como @ManyToOne puedes hacer esto:
+            if (r.getInstitucion() != null) {
+                reporteMap.put("institucion", r.getInstitucion().getNombre());
+            }
+
             if (r.getTipoReporte() != null) {
-                tipoMap.put("nombre", r.getTipoReporte().getNombre());
-                tipoMap.put("icono", r.getTipoReporte().getIcono());
-            }
-            reporteMap.put("tipoReporte", tipoMap);
-
-            // Estado del reporte
-            Map<String, Object> estadoMap = new HashMap<>();
-            if (r.getEstado() != null) {
-                estadoMap.put("nombre", r.getEstado().getNombre());
-            }
-            reporteMap.put("estado", estadoMap);
-
-            // Técnico asignado (solo si existe)
-            if (r.getTecnico() != null) {
-                Map<String, Object> tecnicoMap = new HashMap<>();
-                tecnicoMap.put("id", r.getTecnico().getId());
-                tecnicoMap.put("nombre", r.getTecnico().getNombre());
-                reporteMap.put("tecnico", tecnicoMap);
+                Map<String, Object> tipo = new HashMap<>();
+                tipo.put("nombre", r.getTipoReporte().getNombre());
+                tipo.put("icono", r.getTipoReporte().getIcono());
+                reporteMap.put("tipoReporte", tipo);
             }
 
             return reporteMap;
@@ -99,7 +90,7 @@ public class InicioControlador {
 
         model.addAttribute("tecnicos", tecnicosMap);
         // ✅ ahora sí
-// 👉 Indicadores para las tarjetas del panel
+        // 👉 Indicadores para las tarjetas del panel
         int reportesActivos = reporteServicio.contarReportesActivosPorInstitucion(institucion.getId());
         int asignacionesPendientes = reporteServicio.contarAsignacionesPendientesPorInstitucion(institucion.getId());
         int usuariosActivos = usuarioInstitucionalServicio.contarUsuariosActivosPorInstitucion(institucion.getId());
@@ -107,7 +98,6 @@ public class InicioControlador {
         model.addAttribute("reportesActivos", reportesActivos);
         model.addAttribute("asignacionesPendientes", asignacionesPendientes);
         model.addAttribute("usuariosActivos", usuariosActivos);
-
 
         return "inicio-admin";
     }
