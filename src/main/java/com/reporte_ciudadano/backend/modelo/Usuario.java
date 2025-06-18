@@ -18,7 +18,7 @@ public class Usuario {
 
     private String telefono;
     private String direccion;
-    private boolean confirmado; /// falta insertar en la base datos
+    private boolean confirmado;
 
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;

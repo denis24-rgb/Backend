@@ -42,6 +42,7 @@ public class InstitucionControlador {
 
     @PutMapping("/{id}")
     public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
+
         return institucionServicio.obtenerPorId(id).map(institucion -> {
             institucion.setNombre(nuevaInstitucion.getNombre());
             institucion.setCorreoInstitucional(nuevaInstitucion.getCorreoInstitucional());
@@ -51,6 +52,7 @@ public class InstitucionControlador {
         }).orElseGet(() -> {
             nuevaInstitucion.setId(id);
             return institucionServicio.guardar(nuevaInstitucion);
+
         });
     }
 

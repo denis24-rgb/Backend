@@ -43,7 +43,9 @@ public class TipoReporteControlador {
     private TipoReporteRepositorio tipoReporteRepositorio;
 
     @GetMapping("/vista")
+
     public String mostrarVista(Model model) {
+
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
         model.addAttribute("categorias", categoriaReporteServicio.listarTodas());
