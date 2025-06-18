@@ -5,6 +5,7 @@ import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -25,5 +26,6 @@ public interface InstitucionTipoReporteRepositorio extends JpaRepository<Institu
 
     @Query("SELECT itr.tipoReporte FROM InstitucionTipoReporte itr WHERE itr.categoriaReporte.id = :categoriaId")
     List<TipoReporte> findTiposReportePorCategoria(@Param("categoriaId") Long categoriaId);
+    Optional<InstitucionTipoReporte> findByTipoReporteId(Long tipoReporteId);
 
 }
