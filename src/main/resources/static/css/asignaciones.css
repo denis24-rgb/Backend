@@ -1,0 +1,78 @@
+/* 🎨 Estilo general */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* 🟡🔵🔴 Tarjetas de filtros */
+.estado-btn {
+    cursor: pointer;
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.estado-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 🗂 Tabla de reportes */
+.table th, .table td {
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+.table thead {
+    background-color: #e9ecef;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* 🏷️ Badges de estado */
+.badge {
+    padding: 6px 10px;
+    font-size: 13px;
+    border-radius: 20px;
+    font-weight: 500;
+}
+
+/* 📋 Panel de reportes */
+.card-header.bg-primary {
+    background-color: #0d6efd !important;
+}
+
+/* 🧑‍🔧 Panel de técnicos */
+.card-header.bg-secondary {
+    background-color: #6c757d !important;
+}
+
+.card .border.rounded {
+    background-color: #ffffff;
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.card .border.rounded:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.card .btn-outline-primary {
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 13px;
+}
+
+/* 📱 Responsive mejoras */
+@media (max-width: 991.98px) {
+    .col-lg-8, .col-lg-4 {
+        margin-bottom: 20px;
+    }
+
+    .card .btn-outline-primary {
+        width: 100%;
+        margin-top: 8px;
+    }
+}

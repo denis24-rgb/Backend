@@ -1,0 +1,163 @@
+/* superadmin.css */
+
+body {
+    background-color: #121212;
+    color: #f1f1f1;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar {
+    background-color: #1f1f2e;
+    min-width: 240px;
+    border-right: 1px solid #333;
+}
+
+.sidebar h5 {
+    font-weight: bold;
+    color: #00d0ff;
+}
+
+.sidebar .nav-link {
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+    background-color: #2a2a3d;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.2rem;
+}
+
+.sidebar .nav-link.text-danger:hover {
+    background-color: #4d1a1a;
+}
+
+h2 {
+    color: #00d0ff;
+    font-weight: 600;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 208, 255, 0.12);
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.card-text {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+.card.bg-success {
+    background-color: #198754 !important;
+}
+
+.card.bg-warning {
+    background-color: #ffc107 !important;
+}
+
+.card.bg-info {
+    background-color: #0dcaf0 !important;
+}
+
+.card.bg-secondary {
+    background-color: #343a40 !important;
+    color: #fff;
+}
+
+.card-header {
+    font-weight: 500;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-outline-light {
+    color: #f1f1f1;
+    border-color: #f1f1f1;
+}
+
+.btn-outline-light:hover {
+    background-color: #2e2e40;
+    color: #ffffff;
+}
+
+.btn-outline-primary {
+    color: #00d0ff;
+    border-color: #00d0ff;
+}
+
+.btn-outline-primary:hover {
+    background-color: #00d0ff;
+    color: #121212;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.85rem;
+}
+/* Estilos generales de los botones de filtro */
+.filtro-btn {
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 20px;
+    transition: background-color 0.2s, color 0.2s;
+    border: 2px solid #007bff;
+    color: #007bff;
+    background-color: #fff;
+}
+
+/* Al pasar el mouse */
+.filtro-btn:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Botón activo (seleccionado) */
+.filtro-btn.active {
+    background-color: #007bff;
+    color: #fff;
+}
+
+/* Estilo especial para "Mostrar Todos" */
+.filtro-btn.btn-outline-dark {
+    border-color: #343a40;
+    color: #343a40;
+}
+
+.filtro-btn.btn-outline-dark:hover,
+.filtro-btn.btn-outline-dark.active {
+    background-color: #343a40;
+    color: #fff;
+}
+
+/* Contenedor con espacio debajo del filtro */
+#contenedorFiltros {
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: start;
+}
+#contenedorFiltros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+#btnToggleFiltros {
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 10px;
+}

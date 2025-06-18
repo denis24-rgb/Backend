@@ -6,6 +6,7 @@ import com.reporte_ciudadano.backend.servicio.InstitucionServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,45 +18,45 @@ import java.util.Optional;
 public class InstitucionControlador {
 
     @Autowired
-    private InstitucionServicio servicio;
+    private InstitucionServicio institucionServicio;
 
     @Autowired
     private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
     @GetMapping
     public List<Institucion> listar() {
-        return servicio.listar();
+        return institucionServicio.listarTodas();
     }
 
     @GetMapping("/{id}")
     public Optional<Institucion> obtenerPorId(@PathVariable Long id) {
-        return servicio.obtenerPorId(id);
+        return institucionServicio.obtenerPorId(id);
     }
 
     @PostMapping
     public Institucion crear(@RequestBody Institucion institucion) {
-        return servicio.guardar(institucion);
+        return institucionServicio.guardar(institucion);
     }
 
-    @PutMapping("/{id}")
-    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
-        return servicio.obtenerPorId(id).map(institucion -> {
-            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
-            institucion.setContrasena(nuevaInstitucion.getContrasena());
-            institucion.setTelefono(nuevaInstitucion.getTelefono());
-            institucion.setDireccion(nuevaInstitucion.getDireccion());
-            institucion.setCorreo(nuevaInstitucion.getCorreo());
-            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
-            return servicio.guardar(institucion);
-        }).orElseGet(() -> {
-            nuevaInstitucion.setId(id);
-            return servicio.guardar(nuevaInstitucion);
-        });
-    }
+//    @PutMapping("/{id}")
+//    public Institucion actualizar(@PathVariable Long id, @RequestBody Institucion nuevaInstitucion) {
+//        return servicio.obtenerPorId(id).map(institucion -> {
+//            institucion.setUsernombre(nuevaInstitucion.getUsernombre());
+//            institucion.setContrasena(nuevaInstitucion.getContrasena());
+//            institucion.setTelefono(nuevaInstitucion.getTelefono());
+//            institucion.setDireccion(nuevaInstitucion.getDireccion());
+//            institucion.setCorreo(nuevaInstitucion.getCorreo());
+//            institucion.setNombreInstitucion(nuevaInstitucion.getNombreInstitucion());
+//            return servicio.guardar(institucion);
+//        }).orElseGet(() -> {
+//            nuevaInstitucion.setId(id);
+//            return servicio.guardar(nuevaInstitucion);
+//        });
+//    }
 
     @DeleteMapping("/{id}")
     public void eliminar(@PathVariable Long id) {
-        servicio.eliminar(id);
+        institucionServicio.eliminar(id);
     }
 
     @GetMapping("/por-tipo")
@@ -71,4 +72,32 @@ public class InstitucionControlador {
         return ResponseEntity.ok(instituciones.get(0)); // o simplemente: return ResponseEntity.ok(instituciones);
     }
 
+
+
+    @GetMapping
+    public String listarInstituciones(Model model) {
+        model.addAttribute("instituciones", institucionServicio.listarTodas());
+        return "instituciones"; // se refiere a instituciones.html en templates/
+    }
+
+    // Mostrar formulario de nueva institución
+    @GetMapping("/nueva")
+    public String mostrarFormularioNueva(Model model) {
+        model.addAttribute("institucion", new Institucion());
+        return "formulario-institucion";
+    }
+
+    // Guardar institución
+    @PostMapping("/guardar")
+    public String guardarInstitucion(@ModelAttribute Institucion institucion) {
+        institucionServicio.guardar(institucion);
+        return "redirect:/instituciones";
+    }
+
+    // Eliminar institución
+    @GetMapping("/eliminar/{id}")
+    public String eliminarInstitucion(@PathVariable Long id) {
+        institucionServicio.eliminar(id);
+        return "redirect:/instituciones";
+    }
 }

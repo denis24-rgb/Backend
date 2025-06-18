@@ -1,0 +1,168 @@
+/* 🌐 Fondo general */
+body {
+    background-color: #f5f7fa;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+/* 📌 Sidebar */
+.sidebar {
+    width: 240px;
+    background-color: #0d6efd; /* Bootstrap primary */
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+    position: sticky;
+    top: 0;
+}
+
+.sidebar h5 {
+    font-weight: 600;
+}
+
+.sidebar .nav-link {
+    font-size: 16px;
+    padding: 10px 16px;
+    transition: background-color 0.2s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+}
+
+/* 🧩 Tarjetas de estadísticas */
+.tarjeta-admin {
+    border: none;
+    border-left: 8px solid rgba(255, 255, 255, 0.5);
+    transition: transform 0.2s;
+}
+
+.tarjeta-admin:hover {
+    transform: translateY(-3px);
+}
+
+/* 🗺️ Mapa */
+.map-container {
+    height: 400px;
+    width: 100%;
+    border-radius: 6px;
+    background-color: #e9ecef;
+    position: relative;
+}
+
+/* 📊 Botón estadísticas */
+.btn-ver-estadisticas {
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+/* 📍 Modal */
+.modal-content {
+    border-radius: 12px;
+    border: 1px solid #dee2e6;
+}
+
+.modal-header {
+    background-color: #0d6efd;
+    color: white;
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-body {
+    font-size: 15px;
+}
+
+/* 📱 Responsive mejoras */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
+#filtroTipos label,
+#filtroEstados label {
+    font-weight: normal;
+    background-color: #f1f1f1;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.map-container {
+    height: 500px;
+    width: 100%;
+}
+/* 🔵 Panel flotante de filtros */
+.filtro-panel {
+    position: absolute;
+    bottom: 100px; /* Aparece arriba del botón flotante */
+    right: 30px;
+    width: 380px;
+    z-index: 10000;
+    display: none;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    border-radius: 12px;
+}
+
+/* 🔘 Botón flotante de mostrar filtro */
+.filtro-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    z-index: 10001;
+    display: none;
+}
+
+/* ✅ Mostrar el botón flotante en todas las pantallas */
+#btnMostrarFiltro {
+    display: block;
+    position: fixed;
+    bottom: 20px;
+    right: 20px; /* ⬅️ este es el correcto */
+    z-index: 9999;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 50%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 📱 Estilo más compacto en móviles */
+@media (max-width: 767px) {
+    #btnMostrarFiltro {
+        padding: 10px 12px;
+        font-size: 16px;
+    }
+}
+
+.filtro-activo {
+    background-color: #ffc107 !important; /* Amarillo filtro activo */
+    color: #000;
+}
+/* 🟡 Ajuste responsive del panel de filtros */
+@media (max-width: 767px) {
+    .filtro-panel {
+        bottom: 90px;
+        right: 10px;
+        width: 90%;
+        left: 5%;
+        max-width: 400px;
+        border-radius: 12px;
+        padding: 10px;
+    }
+
+    .filtro-panel label {
+        display: inline-block;
+        margin-bottom: 6px;
+    }
+}

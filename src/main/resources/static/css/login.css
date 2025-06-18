@@ -1,0 +1,17 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.card h4 {
+    font-weight: 600;
+    color: #151515;
+}
+
+.card a {
+    font-size: 0.9rem;
+    color: #0066cc;
+}
+
+.card a:hover {
+    text-decoration: underline;
+}
