@@ -66,34 +66,27 @@ public class SuperadminControlador {
         // Reportes con ubicación
         List<Reporte> listaReportes = reporteServicio.obtenerConUbicacion();
 
-        // Map para enviar solo datos necesarios al JS
         List<Map<String, Object>> reportesMap = listaReportes.stream().map(r -> {
             Map<String, Object> reporteMap = new HashMap<>();
+
             reporteMap.put("id", r.getId());
             reporteMap.put("descripcion", r.getDescripcion());
-            reporteMap.put("latitud", r.getLatitud());
-            reporteMap.put("longitud", r.getLongitud());
-            reporteMap.put("ubicacion", r.getUbicacion());
+            reporteMap.put("estado", r.getEstado()); // Ahora es String directamente
             reporteMap.put("fechaReporte", r.getFechaReporte() != null ? r.getFechaReporte().toString() : null);
+            reporteMap.put("hora", r.getHora() != null ? r.getHora().toString() : null);
+            reporteMap.put("ubicacion", r.getUbicacion());
 
-            Map<String, Object> tipoMap = new HashMap<>();
-            if (r.getTipoReporte() != null) {
-                tipoMap.put("nombre", r.getTipoReporte().getNombre());
-                tipoMap.put("icono", r.getTipoReporte().getIcono());
-            }
-            reporteMap.put("tipoReporte", tipoMap);
-
-            Map<String, Object> estadoMap = new HashMap<>();
-            if (r.getEstado() != null) {
-                estadoMap.put("nombre", r.getEstado().getNombre());
-            }
-            reporteMap.put("estado", estadoMap);
-
-            Map<String, Object> institucionMap = new HashMap<>();
+            // Relacionales, si están mapeadas como @ManyToOne puedes hacer esto:
             if (r.getInstitucion() != null) {
-                institucionMap.put("nombre", r.getInstitucion().getNombre());
+                reporteMap.put("institucion", r.getInstitucion().getNombre());
             }
-            reporteMap.put("institucion", institucionMap);
+
+            if (r.getTipoReporte() != null) {
+                Map<String, Object> tipo = new HashMap<>();
+                tipo.put("nombre", r.getTipoReporte().getNombre());
+                tipo.put("icono", r.getTipoReporte().getIcono());
+                reporteMap.put("tipoReporte", tipo);
+            }
 
             return reporteMap;
         }).toList();
@@ -109,7 +102,6 @@ public class SuperadminControlador {
         return "panel/superadmin";
     }
 
-
     @GetMapping("/crear-institucion")
     public String mostrarFormulario(Model model) {
         FormularioInstitucionAdmin form = new FormularioInstitucionAdmin();
@@ -122,11 +114,10 @@ public class SuperadminControlador {
         return "panel/crear_institucion";
     }
 
-
     @PostMapping("/crear-institucion")
     public String crearInstitucion(@ModelAttribute("formulario") FormularioInstitucionAdmin formulario,
-                                   BindingResult result,
-                                   Model model) {
+            BindingResult result,
+            Model model) {
 
         Institucion nueva = formulario.getInstitucion();
 
@@ -137,7 +128,8 @@ public class SuperadminControlador {
 
         // Validar duplicados por correo
         if (institucionRepo.existsByCorreoInstitucional(nueva.getCorreoInstitucional())) {
-            result.rejectValue("institucion.correoInstitucional", "error.formulario", "Ya existe una institución con ese correo.");
+            result.rejectValue("institucion.correoInstitucional", "error.formulario",
+                    "Ya existe una institución con ese correo.");
         }
 
         // Si hay errores, devolver a la vista con los mensajes por campo
@@ -149,7 +141,7 @@ public class SuperadminControlador {
 
         // Convertir zona y tipo de servicio a mayúsculas
         nueva.setZona(nueva.getZona().toUpperCase());
-        nueva.setTipoServicio(nueva.getTipoServicio().toUpperCase());
+        // nueva.setTipoServicio(nueva.getTipoServicio().toUpperCase());
 
         // Guardar
         nueva.setActivo(true);
@@ -168,13 +160,14 @@ public class SuperadminControlador {
         }
         return "redirect:/panel/superadmin/crear-institucion";
     }
+
     @PostMapping("/editar-institucion")
     public String editarInstitucion(@RequestParam Long id,
-                                    @RequestParam String nombre,
-                                    @RequestParam String zona,
-                                    @RequestParam String correoInstitucional,
-                                    @RequestParam String tipoServicio,
-                                    RedirectAttributes redirectAttributes) {
+            @RequestParam String nombre,
+            @RequestParam String zona,
+            @RequestParam String correoInstitucional,
+            @RequestParam String tipoServicio,
+            RedirectAttributes redirectAttributes) {
         Optional<Institucion> optInst = institucionRepo.findById(id);
 
         if (optInst.isPresent()) {
@@ -182,7 +175,7 @@ public class SuperadminControlador {
             inst.setNombre(nombre);
             inst.setZona(zona);
             inst.setCorreoInstitucional(correoInstitucional);
-            inst.setTipoServicio(tipoServicio);
+            // inst.setTipoServicio(tipoServicio);
             institucionRepo.save(inst); // ✔️ Actualiza la misma institución
 
             redirectAttributes.addFlashAttribute("mensaje", "Institución actualizada correctamente.");
@@ -192,11 +185,11 @@ public class SuperadminControlador {
 
         return "redirect:/panel/superadmin/crear-institucion";
     }
+
     @GetMapping("/usuarios")
     public String mostrarUsuarios(Model model) {
         model.addAttribute("usuarios", usuarioServicio.listarTodos());
         return "usuarios"; // O "panel/usuarios" si lo pones en subcarpeta
     }
-
 
 }
