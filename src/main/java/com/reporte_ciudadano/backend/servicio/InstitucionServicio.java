@@ -34,4 +34,9 @@ public class InstitucionServicio {
         return institucionRepositorio.count();
     }
 
+    public boolean existeNombreOCorreo(String nombre, String correo) {
+        return institucionRepositorio.existsByNombre(nombre) ||
+                institucionRepositorio.existsByCorreoInstitucional(correo);
+    }
+
 }

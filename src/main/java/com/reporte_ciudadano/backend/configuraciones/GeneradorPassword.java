@@ -8,7 +8,7 @@ public class GeneradorPassword {
     public static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:5432/App_reportes";
         String user = "postgres";
-        String password = "1234";
+        String password = "postgres123";
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -20,7 +20,8 @@ public class GeneradorPassword {
                 long usuarioId = resultSet.getLong("id");
                 String contrasenaActual = resultSet.getString("contrasena");
 
-                // Verifica si la contraseña ya está encriptada (por si se ejecuta más de una vez)
+                // Verifica si la contraseña ya está encriptada (por si se ejecuta más de una
+                // vez)
                 if (contrasenaActual != null && !contrasenaActual.startsWith("$2a$")) {
                     String contrasenaCodificada = encoder.encode(contrasenaActual);
 

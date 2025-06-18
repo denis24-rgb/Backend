@@ -1,7 +1,5 @@
 package com.reporte_ciudadano.backend.seguridad;
 
-
-
 import com.reporte_ciudadano.backend.modelo.UsuarioInstitucional;
 import com.reporte_ciudadano.backend.repositorio.UsuarioInstitucionalRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
