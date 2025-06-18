@@ -166,7 +166,6 @@ public class SuperadminControlador {
             @RequestParam String nombre,
             @RequestParam String zona,
             @RequestParam String correoInstitucional,
-            @RequestParam String tipoServicio,
             RedirectAttributes redirectAttributes) {
         Optional<Institucion> optInst = institucionRepo.findById(id);
 
