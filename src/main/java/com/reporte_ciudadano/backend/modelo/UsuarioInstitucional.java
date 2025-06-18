@@ -42,8 +42,5 @@ public class UsuarioInstitucional {
     @JoinColumn(name = "institucion_id", nullable = false)
     @JsonBackReference
     private Institucion institucion;
-//
-//    @OneToMany(mappedBy = "tecnico") // Asegúrate que en Reporte.java se llame 'tecnico'
-//    private List<Reporte> asignaciones = new ArrayList<>();
 
 }
