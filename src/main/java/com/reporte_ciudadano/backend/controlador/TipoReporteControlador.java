@@ -43,7 +43,9 @@ public class TipoReporteControlador {
     private TipoReporteRepositorio tipoReporteRepositorio;
 
     @GetMapping("/vista")
-    public String mostrarVista(Model model){
+
+    public String mostrarVista(Model model) {
+
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
         model.addAttribute("categorias", categoriaReporteServicio.listarTodas());
@@ -52,10 +54,10 @@ public class TipoReporteControlador {
 
     @PostMapping("/crear")
     public String crearTipoReporte(@RequestParam("nombre") String nombre,
-                                   @RequestParam("icono") MultipartFile archivo,
-                                   @RequestParam("institucionId") Long institucionId,
-                                   @RequestParam("categoriaId") Long categoriaId,
-                                   RedirectAttributes redirect) throws IOException {
+            @RequestParam("icono") MultipartFile archivo,
+            @RequestParam("institucionId") Long institucionId,
+            @RequestParam("categoriaId") Long categoriaId,
+            RedirectAttributes redirect) throws IOException {
         if (!archivo.isEmpty() && archivo.getOriginalFilename().endsWith(".png")) {
             String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
 
@@ -86,6 +88,7 @@ public class TipoReporteControlador {
 
         return "redirect:/panel/superadmin/tipos-reportes";
     }
+
     @PostMapping("/eliminar")
     public String eliminarTipoReporte(@RequestParam("id") Long id, RedirectAttributes redirect) {
         try {
@@ -103,16 +106,17 @@ public class TipoReporteControlador {
             tipoRepo.deleteById(id);
             redirect.addFlashAttribute("mensajeExito", "Tipo de reporte eliminado correctamente.");
         } catch (Exception e) {
-            redirect.addFlashAttribute("mensajeError", "No se puede eliminar este tipo porque ya fue usado en uno o más reportes.");
+            redirect.addFlashAttribute("mensajeError",
+                    "No se puede eliminar este tipo porque ya fue usado en uno o más reportes.");
         }
         return "redirect:/panel/superadmin/tipos-reportes";
     }
 
     @PostMapping("/editar")
     public String editarTipoReporte(@RequestParam Long id,
-                                    @RequestParam String nombre,
-                                    @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-                                    RedirectAttributes redirectAttributes) {
+            @RequestParam String nombre,
+            @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
+            RedirectAttributes redirectAttributes) {
         try {
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
             tipo.setNombre(nombre);
@@ -139,11 +143,12 @@ public class TipoReporteControlador {
         }
         return "redirect:/panel/superadmin/tipos-reportes";
     }
+
     public TipoReporteControlador(TipoReporteServicio servicio) {
         this.servicio = servicio;
     }
 
-    @GetMapping
+    @GetMapping("/listar")
     public List<TipoReporte> obtenerTodos() {
         return servicio.listarTodos();
     }
@@ -153,8 +158,9 @@ public class TipoReporteControlador {
         return servicio.buscarPorId(id);
     }
 
-    @GetMapping("/por-categoria") // /api/tipos-reporte/por-categoria?categoria=1
+    @GetMapping("/por-categoria")
     public List<TipoReporte> obtenerPorCategoria(@RequestParam Long categoria) {
-        return tipoReporteRepositorio.findByCategoriaId(categoria);
+        return servicio.listarPorCategoria(categoria);
     }
+
 }

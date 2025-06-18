@@ -1,7 +1,5 @@
 package com.reporte_ciudadano.backend.modelo;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -18,11 +16,8 @@ public class TipoReporte {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
     @Column(nullable = false, unique = true)
     private String nombre;
-
-
 
     @Column(nullable = false)
     private String icono;

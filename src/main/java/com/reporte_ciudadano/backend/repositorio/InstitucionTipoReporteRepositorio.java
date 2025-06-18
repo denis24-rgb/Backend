@@ -2,6 +2,7 @@ package com.reporte_ciudadano.backend.repositorio;
 
 import com.reporte_ciudadano.backend.modelo.Institucion;
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
+import com.reporte_ciudadano.backend.modelo.TipoReporte;
 
 import java.util.List;
 
@@ -19,5 +20,10 @@ public interface InstitucionTipoReporteRepositorio extends JpaRepository<Institu
     List<Institucion> findInstitucionesPorTipoReporte(@Param("tipoId") Long tipoId);
 
     List<InstitucionTipoReporte> findByInstitucionId(Long institucionId);
+
     List<InstitucionTipoReporte> findByCategoriaReporteId(Long categoriaId);
+
+    @Query("SELECT itr.tipoReporte FROM InstitucionTipoReporte itr WHERE itr.categoriaReporte.id = :categoriaId")
+    List<TipoReporte> findTiposReportePorCategoria(@Param("categoriaId") Long categoriaId);
+
 }
