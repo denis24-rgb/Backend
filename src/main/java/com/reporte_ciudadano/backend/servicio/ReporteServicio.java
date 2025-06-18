@@ -1,11 +1,13 @@
 package com.reporte_ciudadano.backend.servicio;
 
+import com.reporte_ciudadano.backend.dto.ActualizacionTecnico;
 import com.reporte_ciudadano.backend.modelo.*;
 import com.reporte_ciudadano.backend.repositorio.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -174,7 +176,7 @@ public class ReporteServicio {
     }
 
     public List<Reporte> obtenerConUbicacion() {
-        return reporteRepositorio.findByLatitudIsNotNullAndLongitudIsNotNull();
+        return reporteRepositorio.findByUbicacionIsNotNull();
     }
 
     public long contarPorEstado(String estado) {
@@ -192,5 +194,36 @@ public class ReporteServicio {
     public int contarReportesActivosPorInstitucion(Long institucionId) {
         return reporteRepositorio.countByInstitucionIdAndEstadoNot(institucionId, "cerrado");
     }
+    @Transactional
+    public boolean actualizarPorTecnico(ActualizacionTecnico dto) {
+        Optional<Reporte> optReporte = reporteRepositorio.findById(dto.getReporteId());
+
+        if (optReporte.isEmpty()) return false;
+
+        Reporte reporte = optReporte.get();
+
+        // Validar cambio permitido (en minúsculas porque tu campo estado es en texto)
+        String estadoActual = reporte.getEstado().toLowerCase();
+        String nuevoEstadoSolicitado = dto.getNuevoEstado().toLowerCase();
+
+        boolean cambioPermitido =
+                ("recibido".equals(estadoActual) && "en proceso".equals(nuevoEstadoSolicitado)) ||
+                        ("en proceso".equals(estadoActual) && "resuelto".equals(nuevoEstadoSolicitado));
+
+        if (!cambioPermitido) return false;
+
+        // Asignar nuevo estado directamente (ya no hay entidad EstadoReporte)
+        reporte.setEstado(nuevoEstadoSolicitado);
+
+        // Guardar comentario solo si se resuelve el reporte
+        if ("resuelto".equals(nuevoEstadoSolicitado)) {
+            reporte.setDescripcion(reporte.getDescripcion() + "\n[Comentario técnico]: " + dto.getComentario());
+        }
+
+        // Guardamos cambios
+        reporteRepositorio.save(reporte);
+        return true;
+    }
+
 
 }

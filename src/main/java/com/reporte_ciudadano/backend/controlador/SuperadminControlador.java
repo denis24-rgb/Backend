@@ -66,9 +66,9 @@ public class SuperadminControlador {
         // Reportes con ubicación
         List<Reporte> listaReportes = reporteServicio.obtenerConUbicacion();
 
+        // Map para enviar solo datos necesarios al JS
         List<Map<String, Object>> reportesMap = listaReportes.stream().map(r -> {
             Map<String, Object> reporteMap = new HashMap<>();
-
             reporteMap.put("id", r.getId());
             reporteMap.put("descripcion", r.getDescripcion());
             reporteMap.put("estado", r.getEstado()); // Ahora es String directamente
@@ -89,7 +89,7 @@ public class SuperadminControlador {
             }
 
             return reporteMap;
-        }).toList();
+    }).toList();
 
         // Convertir a JSON
         ObjectMapper mapper = new ObjectMapper();
@@ -101,6 +101,7 @@ public class SuperadminControlador {
 
         return "panel/superadmin";
     }
+
 
     @GetMapping("/crear-institucion")
     public String mostrarFormulario(Model model) {
@@ -160,7 +161,6 @@ public class SuperadminControlador {
         }
         return "redirect:/panel/superadmin/crear-institucion";
     }
-
     @PostMapping("/editar-institucion")
     public String editarInstitucion(@RequestParam Long id,
             @RequestParam String nombre,
@@ -185,11 +185,11 @@ public class SuperadminControlador {
 
         return "redirect:/panel/superadmin/crear-institucion";
     }
-
     @GetMapping("/usuarios")
     public String mostrarUsuarios(Model model) {
         model.addAttribute("usuarios", usuarioServicio.listarTodos());
         return "usuarios"; // O "panel/usuarios" si lo pones en subcarpeta
     }
+
 
 }
