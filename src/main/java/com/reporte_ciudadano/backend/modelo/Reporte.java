@@ -42,7 +42,8 @@ public class Reporte {
     @Column(name = "hora", updatable = false)
     private LocalTime hora;
 
-    private String estado = "recibido";
+    @Column(nullable = false)
+    private String estado; //  "Recibido", "En Proceso", etc.
 
     @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialEstado> historialEstados;

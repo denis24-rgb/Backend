@@ -44,11 +44,6 @@
                  th:errors="*{institucion.correoInstitucional}"></div>
         </div>
 
-        <div class="col-md-6">
-            <label>Tipo de Servicio</label>
-            <input type="text" th:field="*{institucion.tipoServicio}" class="form-control uppercase" required>
-        </div>
-
         <div class="col-12">
             <button class="btn btn-success">✅ Registrar</button>
             <button type="button" class="btn btn-secondary ms-2" onclick="window.location.replace('/panel/superadmin')">🔙 Volver</button>
@@ -69,7 +64,6 @@
             <th>Nombre</th>
             <th>Zona</th>
             <th>Correo</th>
-            <th>Servicio</th>
             <th>Acciones</th>
         </tr>
         </thead>
@@ -79,7 +73,6 @@
             <td th:text="${inst.nombre}">Nombre</td>
             <td th:text="${inst.zona}">Zona</td>
             <td th:text="${inst.correoInstitucional}">Correo</td>
-            <td th:text="${inst.tipoServicio}">Servicio</td>
 
 
             <td>
@@ -140,10 +133,6 @@
                                         <input type="email" class="form-control" name="correoInstitucional" th:value="${inst.correoInstitucional}" required />
                                     </div>
 
-                                    <div class="mb-3">
-                                        <label>Tipo de Servicio</label>
-                                        <input type="text" class="form-control uppercase" name="tipoServicio" th:value="${inst.tipoServicio}" required />
-                                    </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-success">💾 Guardar</button>
