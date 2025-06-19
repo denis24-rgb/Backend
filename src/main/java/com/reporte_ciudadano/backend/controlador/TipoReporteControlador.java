@@ -2,6 +2,7 @@ package com.reporte_ciudadano.backend.controlador;
 
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
+import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
 import com.reporte_ciudadano.backend.repositorio.TipoReporteRepositorio;
 import com.reporte_ciudadano.backend.servicio.CategoriaReporteServicio;
 import com.reporte_ciudadano.backend.servicio.InstitucionServicio;
@@ -9,6 +10,7 @@ import com.reporte_ciudadano.backend.servicio.InstitucionTipoReporteServicio;
 import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,8 +23,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/panel/superadmin/tipos-reportes")
@@ -41,10 +46,14 @@ public class TipoReporteControlador {
 
     @Autowired
     private InstitucionTipoReporteServicio institucionTipoReporteServicio;
-    @Autowired
-    private TipoReporteRepositorio tipoReporteRepositorio;
 
-    @GetMapping
+    @Autowired
+    private InstitucionTipoReporte institucionTipoReporte;
+    @Autowired
+    private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
+
+
+    @GetMapping("/vista")
     public String mostrarVista(Model model) {
 
 
@@ -185,6 +194,21 @@ public class TipoReporteControlador {
     @GetMapping("/por-categoria")
     public List<TipoReporte> obtenerPorCategoria(@RequestParam Long categoria) {
         return servicio.listarPorCategoria(categoria);
+    }
+
+    @GetMapping("/por-categoria/{categoriaId}")
+    public ResponseEntity<List<Map<String, Object>>> obtenerTiposPorCategoria(@PathVariable Long categoriaId) {
+        List<InstitucionTipoReporte> lista = institucionTipoReporteRepositorio.findByCategoriaReporteId(categoriaId);
+        List<Map<String, Object>> tipos = lista.stream().map(relacion -> {
+            TipoReporte tipo = relacion.getTipoReporte();
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", tipo.getId());
+            map.put("nombre", tipo.getNombre());
+            map.put("icono", tipo.getIcono());
+            return map;
+        }).distinct().collect(Collectors.toList());
+
+        return ResponseEntity.ok(tipos);
     }
 
 }
