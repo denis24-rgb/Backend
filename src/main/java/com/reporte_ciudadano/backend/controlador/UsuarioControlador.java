@@ -76,10 +76,13 @@ public class UsuarioControlador {
         String direccion = request.get("direccion");
 
         Usuario usuario = usuarioServicio.completarDatos(correo, nombre, telefono, direccion);
+
         Map<String, Object> response = new HashMap<>();
+        response.put("id", usuario.getId()); // ✅ esto es lo que Flutter necesita
         response.put("correo", usuario.getCorreo());
         response.put("tokenSesion", usuario.getTokenSesion());
-        return ResponseEntity.ok(usuario);
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/existe")

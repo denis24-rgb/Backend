@@ -40,13 +40,19 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .cacheControl(cache -> cache.disable()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/imagenes/**", "/diseño/**").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**", "/imagenes/**", "/diseño/**",
+                                "/verificacion/**", // si usas confirmación de token por HTML
+                                "/nuevo-dispositivo-confirmado", // si usas esta vista HTML también
+                                "/confirmacion",
+                                "/api/usuarios/**")
+                        .permitAll()
                         .requestMatchers("/panel/superadmin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/usuarios/**").hasRole("ADMINISTRADOR")
                         .requestMatchers("/asignaciones/**").hasAnyRole("ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/reportes/**", "/instituciones/**").authenticated()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
+
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/redirigir", true) // ✅ Aquí hacemos que se redirija al controlador que
