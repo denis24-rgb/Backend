@@ -13,6 +13,8 @@ public class InstitucionTipoReporteServicio {
 
     @Autowired
     private InstitucionTipoReporteRepositorio repo;
+    @Autowired
+    private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
     public InstitucionTipoReporte guardar(InstitucionTipoReporte entidad) {
         return repo.save(entidad);
@@ -29,4 +31,9 @@ public class InstitucionTipoReporteServicio {
     public List<InstitucionTipoReporte> listarPorCategoria(Long categoriaId) {
         return repo.findByCategoriaReporteId(categoriaId);
     }
+    public InstitucionTipoReporte buscarPorTipoReporteId(Long tipoReporteId) {
+        return repo.findByTipoReporteId(tipoReporteId).orElse(null);
+    }
+
+
 }
