@@ -11,6 +11,8 @@ import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,9 +29,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@RestController
-@RequestMapping("/api/tipos-reporte")
-@CrossOrigin(origins = "*")
+@Controller
+@RequestMapping("/panel/superadmin/tipos-reportes")
+@PreAuthorize("hasRole('SUPERADMIN')")
 public class TipoReporteControlador {
 
     private final TipoReporteServicio servicio;
@@ -50,8 +52,10 @@ public class TipoReporteControlador {
     @Autowired
     private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
+
     @GetMapping("/vista")
     public String mostrarVista(Model model) {
+
 
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
@@ -121,33 +125,55 @@ public class TipoReporteControlador {
 
     @PostMapping("/editar")
     public String editarTipoReporte(@RequestParam Long id,
-            @RequestParam String nombre,
-            @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-            RedirectAttributes redirectAttributes) {
+                                    @RequestParam String nombre,
+                                    @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
+                                    @RequestParam Long institucionId,
+                                    @RequestParam Long categoriaId,
+                                    RedirectAttributes redirectAttributes) {
         try {
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
             tipo.setNombre(nombre);
 
             if (iconoFile != null && !iconoFile.isEmpty()) {
-                // Ruta del ícono anterior
+                // Eliminar el anterior
                 String iconoAnterior = tipo.getIcono();
                 Path rutaAnterior = Paths.get("src/main/resources/static/imagenes", iconoAnterior);
-
-                // Eliminar si existe
                 Files.deleteIfExists(rutaAnterior);
 
-                // Guardar nuevo ícono
-                String nuevoNombreArchivo = UUID.randomUUID() + "_" + iconoFile.getOriginalFilename();
-                Path rutaDestino = Paths.get("src/main/resources/static/imagenes", nuevoNombreArchivo);
+                // Guardar el nuevo ícono
+                String nombreOriginal = iconoFile.getOriginalFilename();
+                Path rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreOriginal);
+
+// Verificar si ya existe un archivo con ese nombre
+                if (Files.exists(rutaDestino)) {
+                    // Si existe, se genera un nombre único para no sobrescribir
+                    String nombreUnico = System.currentTimeMillis() + "_" + nombreOriginal;
+                    rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreUnico);
+                    tipo.setIcono(nombreUnico);
+                } else {
+                    tipo.setIcono(nombreOriginal);
+                }
+
+// Guardar el archivo (nuevo o con nombre original)
                 Files.copy(iconoFile.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
-                tipo.setIcono(nuevoNombreArchivo);
+
             }
 
             tipoRepo.save(tipo);
+
+            // 🔄 Actualizar relación en InstitucionTipoReporte
+            InstitucionTipoReporte relacion = institucionTipoReporteServicio.buscarPorTipoReporteId(id);
+            if (relacion != null) {
+                relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
+                relacion.setCategoriaReporte(categoriaReporteServicio.obtenerPorId(categoriaId).orElseThrow());
+                institucionTipoReporteServicio.guardar(relacion);
+            }
+
             redirectAttributes.addFlashAttribute("mensajeExito", "Tipo de reporte actualizado correctamente.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el tipo de reporte.");
         }
+
         return "redirect:/panel/superadmin/tipos-reportes";
     }
 
