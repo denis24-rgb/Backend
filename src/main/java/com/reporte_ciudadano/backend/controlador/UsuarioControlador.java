@@ -1,6 +1,7 @@
 package com.reporte_ciudadano.backend.controlador;
 
 import com.reporte_ciudadano.backend.modelo.Usuario;
+import com.reporte_ciudadano.backend.seguridad.UsuarioDetalles;
 import com.reporte_ciudadano.backend.servicio.EmailService;
 import com.reporte_ciudadano.backend.servicio.UsuarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.reporte_ciudadano.backend.seguridad.JwtUtil;
+import com.reporte_ciudadano.backend.seguridad.UsuarioAppDetalles;
+
+import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/usuarios")
+@RequestMapping("/api/usuariosApp")
 @CrossOrigin(origins = "*")
 public class UsuarioControlador {
 
@@ -25,6 +30,9 @@ public class UsuarioControlador {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @GetMapping
     public List<Usuario> listarUsuarios() {
@@ -77,10 +85,19 @@ public class UsuarioControlador {
 
         Usuario usuario = usuarioServicio.completarDatos(correo, nombre, telefono, direccion);
 
+        // ✅ Generar JWT
+        UsuarioAppDetalles userDetails = new UsuarioAppDetalles(usuario);
+        String jwt = jwtUtil.generarToken(userDetails);
+
+        // ✅ Guardar el token en el campo 'tokenSesion'
+        usuario.setTokenSesion(jwt);
+        usuarioServicio.guardarUsuario(usuario);
+
+        // ✅ Devolver token y datos a la app
         Map<String, Object> response = new HashMap<>();
-        response.put("id", usuario.getId()); // ✅ esto es lo que Flutter necesita
+        response.put("id", usuario.getId());
         response.put("correo", usuario.getCorreo());
-        response.put("tokenSesion", usuario.getTokenSesion());
+        response.put("tokenSesion", jwt); // JWT real
 
         return ResponseEntity.ok(response);
     }
@@ -174,17 +191,27 @@ public class UsuarioControlador {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarUsuario(@PathVariable Long id, @RequestBody Usuario datosActualizados) {
-        Optional<Usuario> usuarioOpt = usuarioServicio.buscarPorId(id);
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
-            usuario.setNombre(datosActualizados.getNombre());
-            usuario.setTelefono(datosActualizados.getTelefono());
-            usuario.setDireccion(datosActualizados.getDireccion());
-            usuarioServicio.guardarUsuario(usuario);
-            return ResponseEntity.ok(usuario);
+    public ResponseEntity<?> actualizarUsuario(
+            @PathVariable Long id,
+            @RequestBody Usuario datosActualizados,
+            Principal principal) {
+        Optional<Usuario> usuarioOpt = usuarioServicio.buscarPorCorreo(principal.getName());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no autenticado");
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+
+        Usuario usuarioAutenticado = usuarioOpt.get();
+
+        if (!usuarioAutenticado.getId().equals(id)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No puedes modificar otro usuario");
+        }
+
+        usuarioAutenticado.setNombre(datosActualizados.getNombre());
+        usuarioAutenticado.setTelefono(datosActualizados.getTelefono());
+        usuarioAutenticado.setDireccion(datosActualizados.getDireccion());
+        usuarioServicio.guardarUsuario(usuarioAutenticado);
+
+        return ResponseEntity.ok(usuarioAutenticado);
     }
 
 }
