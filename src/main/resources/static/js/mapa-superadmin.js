@@ -1,7 +1,7 @@
 console.log("🟢 mapa-superadmin.js cargado");
 
 function initMap() {
-    const centro = { lat: -17.4006, lng: -63.8349 };
+    const centro = { lat: -17.402354, lng: -63.881410 };
 
     const mapa = new google.maps.Map(document.getElementById("map"), {
         zoom: 13,
@@ -86,35 +86,64 @@ function initMap() {
 
     // 📍 Crear marcadores
     reportes.forEach(reporte => {
-        if (reporte.latitud && reporte.longitud) {
-            const iconoURL = "/imagenes/" + (reporte.tipoReporte?.icono || "icono-default.png");
+        if (reporte.ubicacion && reporte.ubicacion.includes(",")) {
+            const partes = reporte.ubicacion.split(",").map(p => parseFloat(p.trim()));
+            if (partes.length === 2 && !isNaN(partes[0]) && !isNaN(partes[1])) {
+                const posicion = { lat: partes[0], lng: partes[1] };
 
-            const marcador = new google.maps.Marker({
-                position: { lat: reporte.latitud, lng: reporte.longitud },
-                icon: {
-                    url: iconoURL,
-                    scaledSize: new google.maps.Size(40, 40)
-                },
-                title: reporte.tipoReporte?.nombre || "Reporte",
-                animation: google.maps.Animation.DROP
-            });
+                const iconoURL = "/imagenes/" + (reporte.tipoReporte?.icono || "icono-default.png");
 
-            marcador.reporte = reporte;
+                const marcador = new google.maps.Marker({
+                    position: posicion,
+                    icon: {
+                        url: iconoURL,
+                        scaledSize: new google.maps.Size(40, 40)
+                    },
+                    title: reporte.tipoReporte?.nombre || "Reporte",
+                    animation: google.maps.Animation.DROP
+                });
 
-            marcador.addListener("click", () => {
-                const html = `
-                    <p><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || 'N/A'}</p>
-                    <p><strong>Descripción:</strong> ${reporte.descripcion || 'Sin descripción'}</p>
-                    <p><strong>Institución:</strong> ${reporte.institucion?.nombre || 'Sin asignar'}</p>
-                    <p><strong>Estado:</strong> ${reporte.estado?.nombre || 'Desconocido'}</p>
-                    <p><strong>Ubicación:</strong> ${reporte.ubicacion || 'No registrada'}</p>
-                    <p><strong>Fecha:</strong> ${reporte.fechaReporte?.substring(0, 10) || 'No registrada'}</p>
-                `;
-                document.getElementById("contenidoModal").innerHTML = html;
-                new bootstrap.Modal(document.getElementById("modalDetalleReporte")).show();
-            });
+                marcador.reporte = reporte;
 
-            marcadores.push(marcador);
+                marcador.addListener("click", () => {
+                    const objetivoZoom = 17;
+                    const incremento = 4;
+                    const delay = 120;
+
+                    let nivelActual = mapa.getZoom();
+
+                    // Centrar primero
+                    mapa.panTo(marcador.getPosition());
+
+                    // Hacer zoom poco a poco si es necesario
+                    function zoomProgresivo() {
+                        if (nivelActual < objetivoZoom) {
+                            nivelActual += incremento;
+                            mapa.setZoom(nivelActual);
+                            setTimeout(zoomProgresivo, delay);
+                        }
+                    }
+
+                    if (nivelActual < objetivoZoom) {
+                        zoomProgresivo();
+                    }
+
+                    // 👉 Aquí tu modal no se afecta, se mantiene igual
+                    const html = `
+        <p><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || 'N/A'}</p>
+        <p><strong>Descripción:</strong> ${reporte.descripcion || 'Sin descripción'}</p>
+        <p><strong>Institución:</strong> ${reporte.institucion?.nombre || 'Sin asignar'}</p>
+        <p><strong>Estado:</strong> ${reporte.estado?.nombre || 'Desconocido'}</p>
+        <p><strong>Ubicación:</strong> ${reporte.ubicacion || 'No registrada'}</p>
+        <p><strong>Fecha:</strong> ${reporte.fechaReporte?.substring(0, 10) || 'No registrada'}</p>
+    `;
+                    document.getElementById("contenidoModal").innerHTML = html;
+                    new bootstrap.Modal(document.getElementById("modalDetalleReporte")).show();
+                });
+
+
+                marcadores.push(marcador);
+            }
         }
     });
 

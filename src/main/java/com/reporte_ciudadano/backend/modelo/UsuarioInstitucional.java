@@ -43,4 +43,12 @@ public class UsuarioInstitucional {
     @JsonBackReference
     private Institucion institucion;
 
+    // ✅ Constructor vacío obligatorio para JPA
+    public UsuarioInstitucional() {
+    }
+
+    // ✅ Constructor con ID útil para asignaciones
+    public UsuarioInstitucional(Long id) {
+        this.id = id;
+    }
 }
