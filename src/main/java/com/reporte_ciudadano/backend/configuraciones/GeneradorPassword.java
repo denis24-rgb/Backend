@@ -6,7 +6,7 @@ import java.sql.*;
 
 public class GeneradorPassword {
     public static void main(String[] args) {
-        String url = "jdbc:postgresql://localhost:5432/App_reportes";
+        String url = "jdbc:postgresql://localhost:5432/reporte_ciudadano";
         String user = "postgres";
         String password = "postgres123";
 

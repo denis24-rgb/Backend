@@ -16,12 +16,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.thymeleaf.extras.springsecurity6.dialect.SpringSecurityDialect;
 
+import com.reporte_ciudadano.backend.seguridad.JwtFiltro;
 import com.reporte_ciudadano.backend.seguridad.UsuarioDetallesServicio;
 
 import java.io.IOException;
@@ -33,6 +35,9 @@ public class SecurityConfig {
     @Autowired
     private UsuarioDetallesServicio usuarioDetallesServicio;
 
+    @Autowired
+    private JwtFiltro jwtFiltro;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -40,13 +45,34 @@ public class SecurityConfig {
                 .headers(headers -> headers
                         .cacheControl(cache -> cache.disable()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/css/**", "/js/**", "/imagenes/**", "/diseño/**").permitAll()
+                        .requestMatchers("/login", "/css/**", "/js/**",
+                                "/imagenes/**", "/diseño/**",
+                                "/verificacion/**", // si usas confirmación de token por HTML
+                                "/nuevo-dispositivo-confirmado", // si usas esta vista HTML también
+                                "/confirmacion",
+                                "/api/usuariosApp/**")
+                        .permitAll()
                         .requestMatchers("/panel/superadmin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/usuarios/**").hasAnyRole("SUPERADMIN", "ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/asignaciones/**").hasAnyRole("ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/reportes/**", "/instituciones/**").authenticated()
-                        .anyRequest().authenticated())
+                        // ✅ Estas rutas requieren token de sesión válido (autenticado)
+                        .requestMatchers(
+                                "/api/usuarios/**", // Incluye /{usuarioId}/notificaciones y más
+                                "/api/reportes/**",
+                                "/archivos/**",
+                                "/api/contactos/**",
+                                "/api/evidencias/**",
+                                "/historial/**",
+                                "/api/tipos-reporte/**")
+                        .authenticated()
+                        .anyRequest().authenticated()
+
+                )
+
+                .addFilterBefore(jwtFiltro, UsernamePasswordAuthenticationFilter.class)
                 .formLogin(form -> form
+
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/redirigir", true) // ✅ Aquí hacemos que se redirija al controlador que

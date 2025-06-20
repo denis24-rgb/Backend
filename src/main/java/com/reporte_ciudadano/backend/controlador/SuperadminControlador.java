@@ -89,7 +89,7 @@ public class SuperadminControlador {
             }
 
             return reporteMap;
-    }).toList();
+        }).toList();
 
         // Convertir a JSON
         ObjectMapper mapper = new ObjectMapper();
@@ -101,7 +101,6 @@ public class SuperadminControlador {
 
         return "panel/superadmin";
     }
-
 
     @GetMapping("/crear-institucion")
     public String mostrarFormulario(Model model) {
@@ -161,6 +160,7 @@ public class SuperadminControlador {
         }
         return "redirect:/panel/superadmin/crear-institucion";
     }
+
     @PostMapping("/editar-institucion")
     public String editarInstitucion(@RequestParam Long id,
             @RequestParam String nombre,
@@ -184,11 +184,11 @@ public class SuperadminControlador {
 
         return "redirect:/panel/superadmin/crear-institucion";
     }
+
     @GetMapping("/usuarios")
     public String mostrarUsuarios(Model model) {
         model.addAttribute("usuarios", usuarioServicio.listarTodos());
         return "usuarios"; // O "panel/usuarios" si lo pones en subcarpeta
     }
-
 
 }

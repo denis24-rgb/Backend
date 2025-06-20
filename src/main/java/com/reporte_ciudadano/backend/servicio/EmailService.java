@@ -12,7 +12,7 @@ public class EmailService {
   private JavaMailSender mailSender;
 
   public void enviarCorreoVerificacion(String para, String token) {
-    String urlVerificacion = "http://192.168.1.15:8084/api/usuarios/confirmar?token=" + token;
+    String urlVerificacion = "http://192.168.2.108:8084/api/usuariosApp/confirmar?token=" + token;
 
     SimpleMailMessage mensaje = new SimpleMailMessage();
     mensaje.setTo(para);
@@ -25,7 +25,7 @@ public class EmailService {
   }
 
   public void enviarCorreoLoginNuevoDispositivo(String correo, String token) {
-    String urlLogin = "http://192.168.1.15:8084/api/usuarios/confirmar-login?token=" + token;
+    String urlLogin = "http://192.168.2.108:8084/api/usuariosApp/confirmar-login?token=" + token;
 
     SimpleMailMessage mensaje = new SimpleMailMessage();
     mensaje.setTo(correo);
