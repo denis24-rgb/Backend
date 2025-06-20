@@ -224,6 +224,18 @@ public class ReporteServicio {
         reporteRepositorio.save(reporte);
         return true;
     }
-
+    public List<String> listarEstadosUnicos() {
+        return ESTADOS_VALIDOS;
+    }
+    public Reporte obtenerPorIdObligatorio(Long id) {
+        return reporteRepositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Reporte no encontrado"));
+    }
+    public void eliminarPorId(Long id) {
+        reporteRepositorio.deleteById(id);
+    }
+    public List<Reporte> listarPorInstitucion(Long institucionId) {
+        return reporteRepositorio.findByInstitucionId(institucionId);
+    }
 
 }

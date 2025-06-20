@@ -14,7 +14,10 @@ public class AsignacionTecnico {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @Column(name = "fecha_asignacion", nullable = false)
+    private LocalDateTime fechaAsignacion;
+
+    @ManyToOne
     @JoinColumn(name = "reporte_id", nullable = false)
     private Reporte reporte;
 
@@ -22,11 +25,21 @@ public class AsignacionTecnico {
     @JoinColumn(name = "tecnico_id", nullable = false)
     private UsuarioInstitucional tecnico;
 
-    @Column(name = "fecha_asignacion", nullable = false)
-    private LocalDateTime fechaAsignacion;
+    @ManyToOne
+    @JoinColumn(name = "asignador_id")
+    private UsuarioInstitucional asignador;
+
+    @Column(name = "comentario_tecnico", columnDefinition = "text")
+    private String comentarioTecnico;
+
+    @Column(name = "imagen_trabajo", columnDefinition = "text")
+    private String imagenTrabajo;
+
+    @Column(name = "fecha_finalizacion")
+    private LocalDateTime fechaFinalizacion;
+
     @PrePersist
     public void prePersist() {
         this.fechaAsignacion = LocalDateTime.now();
     }
-
 }

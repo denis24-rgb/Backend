@@ -105,4 +105,8 @@ public class UsuarioInstitucionalServicio {
     public int contarUsuariosActivosPorInstitucion(Long institucionId) {
         return usuarioRepo.contarUsuariosActivosPorInstitucion(institucionId);
     }
+    public List<UsuarioInstitucional> listarTodosTecnicos() {
+        return usuarioRepo.findByRol(RolInstitucional.TECNICO);
+    }
+
 }

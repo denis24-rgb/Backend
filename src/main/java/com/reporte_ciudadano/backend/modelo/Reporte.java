@@ -48,4 +48,12 @@ public class Reporte {
     @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialEstado> historialEstados;
 
+    // ✅ Constructor vacío necesario para JPA
+    public Reporte() {
+    }
+
+    // ✅ Constructor con ID útil para formularios o referencias
+    public Reporte(Long id) {
+        this.id = id;
+    }
 }

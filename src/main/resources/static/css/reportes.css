@@ -1,0 +1,163 @@
+/* 🌐 Fondo general y tipografía */
+body {
+    background-color: #f1f3f6;
+    font-family: 'Segoe UI', sans-serif;
+    color: #212529;
+}
+
+/* 📦 Contenedor principal */
+.card.shadow {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* 🔵 Encabezado */
+.card-header.bg-primary {
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    padding: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: #fff;
+}
+
+/* ➕ Botón nuevo reporte */
+.card-header .btn {
+    background-color: #ffffff;
+    color: #0d6efd;
+    border: none;
+    font-weight: bold;
+    padding: 0.5rem 1.2rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease-in-out;
+}
+
+.card-header .btn:hover {
+    background-color: #e2e6ea;
+}
+
+/* 🎯 Sección de filtros */
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+#formFiltros label {
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+/* 🎛️ Selects */
+#formFiltros select.form-select {
+    border: 1.8px solid #ced4da;
+    border-radius: 0.75rem;
+    font-weight: 500;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s;
+    color: #495057;
+}
+
+#formFiltros select.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* 🧹 Botón limpiar */
+#formFiltros .btn-outline-secondary {
+    border-radius: 0.75rem;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+#formFiltros .btn-outline-secondary:hover {
+    background-color: #dee2e6;
+    color: #000;
+}
+
+/* 🧩 Tarjetas de reporte */
+.tarjeta-reporte {
+    border-radius: 1rem;
+    transition: all 0.3s ease-in-out;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.tarjeta-reporte:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 🖼️ Imagen miniatura */
+.tarjeta-reporte img.img-thumbnail {
+    transition: transform 0.2s ease-in-out;
+    border-radius: 0.5rem;
+    border: 2px solid #dee2e6;
+}
+
+.tarjeta-reporte img.img-thumbnail:hover {
+    transform: scale(1.05);
+}
+
+/* 📍 Estado */
+.estado-reporte {
+    font-weight: bold;
+    text-transform: capitalize;
+    color: #0c5460;
+    background-color: #e9f7fa;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 0.9rem;
+}
+
+/* 👤 Técnico badge */
+.badge.bg-success {
+    font-size: 0.85rem;
+    padding: 0.3em 0.7em;
+    border-radius: 1rem;
+}
+
+/* 🧾 Formularios */
+.input-group-sm select.form-select {
+    font-size: 0.85rem;
+}
+
+/* 📷 Modal evidencia */
+.modal-body img {
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* ❌ Modal eliminar */
+.modal-content.border-danger {
+    border-width: 3px !important;
+}
+
+/* 🗺️ Modal mapa */
+#mapaIndividual {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+/* 🕹️ Botones en tarjetas */
+.tarjeta-reporte .btn {
+    font-size: 0.85rem;
+    border-radius: 0.5rem;
+    transition: 0.2s ease-in-out;
+}
+
+.tarjeta-reporte .btn:hover {
+    transform: scale(1.02);
+}
+
+/* 📱 Responsive mejora */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+    }
+}

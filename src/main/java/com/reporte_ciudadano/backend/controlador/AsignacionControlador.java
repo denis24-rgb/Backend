@@ -51,11 +51,19 @@ public class AsignacionControlador {
     }
 
     @PostMapping("/guardar")
-    public String guardarAsignacion(@ModelAttribute AsignacionTecnico asignacion) {
+    public String guardarAsignacion(@RequestParam("reporte.id") Long reporteId,
+                                    @RequestParam("tecnico.id") Long tecnicoId,
+                                    @RequestParam("asignador.id") Long asignadorId) {
+        AsignacionTecnico asignacion = new AsignacionTecnico();
         asignacion.setFechaAsignacion(LocalDateTime.now());
+        asignacion.setReporte(new Reporte(reporteId));
+        asignacion.setTecnico(new UsuarioInstitucional(tecnicoId));
+        asignacion.setAsignador(new UsuarioInstitucional(asignadorId));
+
         asignacionServicio.guardar(asignacion);
-        return "redirect:/asignaciones";
+        return "redirect:/reportes";
     }
+
 
     @GetMapping("/eliminar/{id}")
     public String eliminarAsignacion(@PathVariable Long id) {
