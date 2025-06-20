@@ -48,14 +48,10 @@ public class TipoReporteControlador {
     private InstitucionTipoReporteServicio institucionTipoReporteServicio;
 
     @Autowired
-    private InstitucionTipoReporte institucionTipoReporte;
-    @Autowired
     private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
-
-    @GetMapping("/vista")
+    @GetMapping
     public String mostrarVista(Model model) {
-
 
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
@@ -125,11 +121,11 @@ public class TipoReporteControlador {
 
     @PostMapping("/editar")
     public String editarTipoReporte(@RequestParam Long id,
-                                    @RequestParam String nombre,
-                                    @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-                                    @RequestParam Long institucionId,
-                                    @RequestParam Long categoriaId,
-                                    RedirectAttributes redirectAttributes) {
+            @RequestParam String nombre,
+            @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
+            @RequestParam Long institucionId,
+            @RequestParam Long categoriaId,
+            RedirectAttributes redirectAttributes) {
         try {
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
             tipo.setNombre(nombre);
@@ -144,7 +140,7 @@ public class TipoReporteControlador {
                 String nombreOriginal = iconoFile.getOriginalFilename();
                 Path rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreOriginal);
 
-// Verificar si ya existe un archivo con ese nombre
+                // Verificar si ya existe un archivo con ese nombre
                 if (Files.exists(rutaDestino)) {
                     // Si existe, se genera un nombre único para no sobrescribir
                     String nombreUnico = System.currentTimeMillis() + "_" + nombreOriginal;
@@ -154,7 +150,7 @@ public class TipoReporteControlador {
                     tipo.setIcono(nombreOriginal);
                 }
 
-// Guardar el archivo (nuevo o con nombre original)
+                // Guardar el archivo (nuevo o con nombre original)
                 Files.copy(iconoFile.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
 
             }
@@ -194,21 +190,6 @@ public class TipoReporteControlador {
     @GetMapping("/por-categoria")
     public List<TipoReporte> obtenerPorCategoria(@RequestParam Long categoria) {
         return servicio.listarPorCategoria(categoria);
-    }
-
-    @GetMapping("/por-categoria/{categoriaId}")
-    public ResponseEntity<List<Map<String, Object>>> obtenerTiposPorCategoria(@PathVariable Long categoriaId) {
-        List<InstitucionTipoReporte> lista = institucionTipoReporteRepositorio.findByCategoriaReporteId(categoriaId);
-        List<Map<String, Object>> tipos = lista.stream().map(relacion -> {
-            TipoReporte tipo = relacion.getTipoReporte();
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", tipo.getId());
-            map.put("nombre", tipo.getNombre());
-            map.put("icono", tipo.getIcono());
-            return map;
-        }).distinct().collect(Collectors.toList());
-
-        return ResponseEntity.ok(tipos);
     }
 
 }
