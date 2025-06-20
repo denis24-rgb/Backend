@@ -42,7 +42,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/css/**", "/js/**", "/imagenes/**", "/diseño/**").permitAll()
                         .requestMatchers("/panel/superadmin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/usuarios/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/usuarios/**").hasAnyRole("SUPERADMIN", "ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/asignaciones/**").hasAnyRole("ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/reportes/**", "/instituciones/**").authenticated()
                         .anyRequest().authenticated())

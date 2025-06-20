@@ -4,8 +4,7 @@ let cluster; // Referencia del agrupador
 let tecnicoSeleccionado = { id: null, nombre: null, reporteId: null };
 
 function initMap() {
-    const centro = { lat: -17.4006, lng: -63.8349 };
-
+    const centro = { lat: -17.402354, lng: -63.881410 };
     mapa = new google.maps.Map(document.getElementById("map"), {
         center: centro,
         zoom: 13,
@@ -31,11 +30,17 @@ function renderizarMarcadores() {
     const tiposSeleccionados = obtenerFiltros("tipo");
     const estadosSeleccionados = obtenerFiltros("estado");
 
-    const filtrados = reportes.filter(r =>
-        r.latitud && r.longitud &&
-        (tiposSeleccionados.length === 0 || tiposSeleccionados.includes(r.tipoReporte?.nombre)) &&
-        (estadosSeleccionados.length === 0 || estadosSeleccionados.includes(r.estado?.nombre))
-    );
+    const filtrados = reportes.filter(r => {
+        if (!r.ubicacion || !r.ubicacion.includes(",")) return false;
+
+        const partes = r.ubicacion.split(",").map(p => parseFloat(p.trim()));
+        const ubicacionValida = partes.length === 2 && !isNaN(partes[0]) && !isNaN(partes[1]);
+
+        const tipoValido = tiposSeleccionados.length === 0 || tiposSeleccionados.includes(r.tipoReporte?.nombre);
+        const estadoValido = estadosSeleccionados.length === 0 || estadosSeleccionados.includes(r.estado?.nombre);
+
+        return ubicacionValida && tipoValido && estadoValido;
+    });
 
     // Actualizar contador
     const contador = document.getElementById("contadorReportes");
@@ -47,7 +52,9 @@ function renderizarMarcadores() {
 
     // Crear nuevos marcadores
     filtrados.forEach(reporte => {
-        const posicion = { lat: reporte.latitud, lng: reporte.longitud };
+        const partes = reporte.ubicacion.split(",").map(p => parseFloat(p.trim()));
+        const posicion = { lat: partes[0], lng: partes[1] };
+
         const icono = reporte.tipoReporte?.icono
             ? `/imagenes/${reporte.tipoReporte.icono}`
             : "/imagenes/icono-default.png";
@@ -72,7 +79,7 @@ function renderizarMarcadores() {
         imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m"
     });
 
-    // ✅ Cambiar color del botón de filtros si hay filtros activos
+    // Cambiar color del botón de filtros si hay filtros activos
     const btnFiltro = document.getElementById("btnMostrarFiltro");
     const hayFiltros = tiposSeleccionados.length > 0 || estadosSeleccionados.length > 0;
     if (btnFiltro) {

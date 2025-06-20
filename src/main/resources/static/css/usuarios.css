@@ -18,20 +18,32 @@ body {
     margin: 0;
 }
 
-/* 📊 Tablas */
-.table {
+/* 📋 Contenedor de tabla para scroll horizontal en pantallas pequeñas */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     margin-top: 20px;
     background-color: white;
     border-radius: 10px;
-    overflow: hidden;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 10px;
 }
 
-.table th, .table td {
+/* 📊 Tablas */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 768px;
+}
+
+.table th,
+.table td {
     vertical-align: middle !important;
     padding: 14px;
     font-size: 15px;
     border-bottom: 1px solid #e9ecef;
+    white-space: nowrap;
 }
 
 .table th {
@@ -142,9 +154,16 @@ body {
     font-size: 14px;
 }
 
-/* 📱 Responsive */
+/* 📱 Responsive general */
 @media (max-width: 768px) {
-    .table th, .table td {
+    .table-container {
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .table th,
+    .table td {
         font-size: 13px;
         padding: 10px;
     }
@@ -152,4 +171,17 @@ body {
     .modal-dialog {
         margin: 10px;
     }
+}
+/* ⬛ Corrige desbordes en tablas grandes */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 10px;
+}
+
+/* 🛠️ Asegura que la tabla no rompa diseño en móvil */
+.table {
+    min-width: 800px; /* fuerza scroll si es muy ancha */
+    border-collapse: collapse;
 }

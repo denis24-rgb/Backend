@@ -7,7 +7,7 @@ import com.reporte_ciudadano.backend.repositorio.ReporteRepositorio;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.util.Optional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,6 +61,8 @@ public class AsignacionTecnicoServicio {
     public long contarPorTecnicoYEstado(Long tecnicoId, String estadoNombre) {
         return asignacionRepo.countByTecnicoIdAndReporte_Estado(tecnicoId, estadoNombre);
     }
-
+    public Optional<AsignacionTecnico> obtenerPorReporte(Long reporteId) {
+        return asignacionRepo.findByReporteId(reporteId);
+    }
 
 }

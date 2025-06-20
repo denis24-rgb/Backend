@@ -50,7 +50,11 @@ public class UsuarioInstitucionalControlador {
 
         // Enviar usuario vacío o con error
         if (!model.containsAttribute("usuario")) {
-            model.addAttribute("usuario", new UsuarioInstitucional());
+            UsuarioInstitucional nuevo = new UsuarioInstitucional();
+            if (actual.getRol() != RolInstitucional.SUPERADMIN) {
+                nuevo.setInstitucion(actual.getInstitucion()); // 👈 Aquí le asignamos la institución
+            }
+            model.addAttribute("usuario", nuevo);
         }
 
         // SUPERADMIN puede ver todas las instituciones, otros no

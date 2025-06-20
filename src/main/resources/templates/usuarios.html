@@ -13,9 +13,10 @@
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
             <h3 class="mb-0">👥 Usuarios Institucionales</h3>
             <div>
-                <!-- 🔍 Búsqueda en tiempo real -->
+                <!--  Búsqueda en tiempo real -->
                 <input id="inputBusqueda" class="form-control me-2" type="text" placeholder="Buscar usuario...">
             </div>
+            <!-- Boton Crear nuevo usuario -->
             <button class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevo">➕ Nuevo Usuario</button>
         </div>
 
@@ -25,7 +26,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <table class="table table-bordered table-hover align-middle text-center">
+            <div class="table-container">
+                <table class="table table-bordered table-hover align-middle text-center">
                 <thead class="table-secondary">
                 <tr>
                     <th>Nombre</th>
@@ -69,9 +71,8 @@
                     <td colspan="8" class="text-muted">No hay usuarios registrados.</td>
                 </tr>
                 </tbody>
-            </table>
-
-            <a th:href="@{/inicio}" class="btn btn-secondary mt-3">← Volver al Inicio</a>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -120,7 +121,9 @@
                         <div class="col-md-6">
                             <label class="form-label">Rol</label>
                             <select class="form-select" th:field="*{rol}" required>
-                                <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                                <option th:each="r : ${roles}"
+                                        th:if="${r.name() != 'SUPERADMIN'}"
+                                        th:value="${r}" th:text="${r}"></option>
                             </select>
                         </div>
                         <div class="col-md-12">
@@ -136,10 +139,9 @@
                             <!-- ✅ Para ADMIN, OPERADOR, etc: mostrar institución fija -->
                             <div th:unless="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
                                 <input type="text" class="form-control"
-                                       th:value="${usuario.institucion != null ? usuario.institucion.nombre : 'Sin institución'}"
+                                       th:value="${usuario.institucion?.nombre ?: 'Sin institución'}"
                                        readonly>
-                                <input type="hidden" th:field="*{institucion}"
-                                       th:value="${usuario.institucion != null ? usuario.institucion.id : ''}">
+                                <input type="hidden" name="institucion.id" th:value="${usuario.institucion?.id}">
                             </div>
                         </div>
 
@@ -219,7 +221,11 @@
                             <div class="col-md-6">
                                 <label>Rol</label>
                                 <select class="form-select" name="rol" required>
-                                    <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" th:selected="${r} == ${usuario.rol}"></option>
+                                    <option th:each="r : ${roles}"
+                                            th:if="${r.name() != 'SUPERADMIN'}"
+                                            th:value="${r}" th:text="${r}"
+                                            th:selected="${r} == ${usuario.rol}">
+                                    </option>
                                 </select>
                             </div>
                             <div class="col-md-12">

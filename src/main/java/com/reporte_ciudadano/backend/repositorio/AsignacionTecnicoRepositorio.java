@@ -12,4 +12,5 @@ public interface AsignacionTecnicoRepositorio extends JpaRepository<AsignacionTe
     long countByTecnicoIdAndReporte_Estado(Long tecnicoId, String estado);
 
     List<AsignacionTecnico> findByTecnicoIdAndReporte_Estado(Long tecnicoId, String estado);
+    Optional<AsignacionTecnico> findByReporteId(Long reporteId);
 }
