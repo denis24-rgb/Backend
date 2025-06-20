@@ -2,6 +2,8 @@ package com.reporte_ciudadano.backend.servicio;
 
 import com.reporte_ciudadano.backend.modelo.Usuario;
 import com.reporte_ciudadano.backend.repositorio.UsuarioRepositorio;
+import com.reporte_ciudadano.backend.seguridad.JwtUtil;
+import com.reporte_ciudadano.backend.seguridad.UsuarioAppDetalles;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -20,6 +22,9 @@ public class UsuarioServicio {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     public Usuario guardarUsuario(Usuario usuario) {
         return usuarioRepositorio.save(usuario);
@@ -56,9 +61,6 @@ public class UsuarioServicio {
         // Generar un token único y asignarlo al usuario
         String token = UUID.randomUUID().toString();
         usuario.setTokenVerificacion(token);
-
-        String tokenSesion = UUID.randomUUID().toString();
-        usuario.setTokenSesion(tokenSesion);
 
         // Guardar el usuario en la base de datos
         usuarioRepositorio.save(usuario);
@@ -112,8 +114,10 @@ public class UsuarioServicio {
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            String nuevoTokenSesion = UUID.randomUUID().toString();
-            usuario.setTokenSesion(nuevoTokenSesion); // ACTUALIZA TOKEN DE SESIÓN
+            UsuarioAppDetalles detalles = new UsuarioAppDetalles(usuario);
+            String nuevoTokenSesion = jwtUtil.generarToken(detalles);
+            usuario.setTokenSesion(nuevoTokenSesion);
+            // ACTUALIZA TOKEN DE SESIÓN
             usuarioRepositorio.save(usuario);
             return Optional.of(usuario);
         }

@@ -51,9 +51,9 @@ public class ReporteServicio {
 
     public Reporte guardar(Reporte reporteEntrada) {
         // Validaciones
-        Long usuarioId = reporteEntrada.getUsuario().getId();
-        Usuario usuario = usuarioRepositorio.findById(usuarioId)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        String correo = reporteEntrada.getUsuario().getCorreo();
+        Usuario usuario = usuarioRepositorio.findByCorreo(correo)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con correo: " + correo));
 
         Long institucionId = reporteEntrada.getInstitucion().getId();
         Institucion institucion = institucionRepositorio.findById(institucionId)
@@ -194,11 +194,13 @@ public class ReporteServicio {
     public int contarReportesActivosPorInstitucion(Long institucionId) {
         return reporteRepositorio.countByInstitucionIdAndEstadoNot(institucionId, "cerrado");
     }
+
     @Transactional
     public boolean actualizarPorTecnico(ActualizacionTecnico dto) {
         Optional<Reporte> optReporte = reporteRepositorio.findById(dto.getReporteId());
 
-        if (optReporte.isEmpty()) return false;
+        if (optReporte.isEmpty())
+            return false;
 
         Reporte reporte = optReporte.get();
 
@@ -206,11 +208,11 @@ public class ReporteServicio {
         String estadoActual = reporte.getEstado().toLowerCase();
         String nuevoEstadoSolicitado = dto.getNuevoEstado().toLowerCase();
 
-        boolean cambioPermitido =
-                ("recibido".equals(estadoActual) && "en proceso".equals(nuevoEstadoSolicitado)) ||
-                        ("en proceso".equals(estadoActual) && "resuelto".equals(nuevoEstadoSolicitado));
+        boolean cambioPermitido = ("recibido".equals(estadoActual) && "en proceso".equals(nuevoEstadoSolicitado)) ||
+                ("en proceso".equals(estadoActual) && "resuelto".equals(nuevoEstadoSolicitado));
 
-        if (!cambioPermitido) return false;
+        if (!cambioPermitido)
+            return false;
 
         // Asignar nuevo estado directamente (ya no hay entidad EstadoReporte)
         reporte.setEstado(nuevoEstadoSolicitado);
@@ -224,6 +226,5 @@ public class ReporteServicio {
         reporteRepositorio.save(reporte);
         return true;
     }
-
 
 }
