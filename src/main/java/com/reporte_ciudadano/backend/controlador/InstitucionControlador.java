@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.Thymeleaf;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,7 +63,11 @@ public class InstitucionControlador {
     }
 
     @GetMapping("/por-tipo")
-    public ResponseEntity<?> obtenerInstitucionPorTipo(@RequestParam Long tipoId) {
+    public ResponseEntity<?> obtenerInstitucionPorTipo(@RequestParam Long tipoId, Principal principal) {
+        // ✅ Extraer correo desde el token
+        String correo = principal.getName();
+        System.out.println("🔒 Solicitud realizada por: " + correo);
+
         List<Institucion> instituciones = institucionTipoReporteRepositorio.findInstitucionesPorTipoReporteId(tipoId);
 
         if (instituciones.isEmpty()) {
@@ -70,8 +75,8 @@ public class InstitucionControlador {
                     .body("No se encontraron instituciones para este tipo de reporte");
         }
 
-        // Puedes retornar la primera si es 1 a 1, o toda la lista si permite varias
-        return ResponseEntity.ok(instituciones.get(0)); // o simplemente: return ResponseEntity.ok(instituciones);
+        // ✅ Puedes retornar toda la lista o solo la primera
+        return ResponseEntity.ok(instituciones);
     }
 
     // / ✅ Vista con Thymeleaf para listar instituciones

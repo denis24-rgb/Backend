@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+import java.security.Principal; // ⬅️ importante
 
 @RestController
 @RequestMapping("/api/evidencias")
@@ -60,13 +61,16 @@ public class EvidenciaControlador {
     public ResponseEntity<?> subirEvidencia(
             @RequestParam("reporte_id") Long reporteId,
             @RequestParam("tipo_evidencia") String tipo,
-            @RequestParam("archivo") MultipartFile archivo) {
+            @RequestParam("archivo") MultipartFile archivo,
+            Principal principal) {
 
         try {
             Reporte reporte = reporteRepositorio.findById(reporteId).orElse(null);
             if (reporte == null) {
                 return ResponseEntity.badRequest().body("Reporte no encontrado");
             }
+            String correo = principal.getName();
+            System.out.println("Usuario autenticado: " + correo);
 
             // Verificar carpeta
             File directorio = new File(UPLOAD_DIR);

@@ -2,6 +2,7 @@ package com.reporte_ciudadano.backend.controlador;
 
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
+import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
 import com.reporte_ciudadano.backend.repositorio.TipoReporteRepositorio;
 import com.reporte_ciudadano.backend.servicio.CategoriaReporteServicio;
 import com.reporte_ciudadano.backend.servicio.InstitucionServicio;
@@ -9,6 +10,7 @@ import com.reporte_ciudadano.backend.servicio.InstitucionTipoReporteServicio;
 import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,8 +23,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/panel/superadmin/tipos-reportes")
@@ -41,12 +46,12 @@ public class TipoReporteControlador {
 
     @Autowired
     private InstitucionTipoReporteServicio institucionTipoReporteServicio;
+
     @Autowired
-    private TipoReporteRepositorio tipoReporteRepositorio;
+    private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
     @GetMapping
     public String mostrarVista(Model model) {
-
 
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
@@ -116,11 +121,11 @@ public class TipoReporteControlador {
 
     @PostMapping("/editar")
     public String editarTipoReporte(@RequestParam Long id,
-                                    @RequestParam String nombre,
-                                    @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-                                    @RequestParam Long institucionId,
-                                    @RequestParam Long categoriaId,
-                                    RedirectAttributes redirectAttributes) {
+            @RequestParam String nombre,
+            @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
+            @RequestParam Long institucionId,
+            @RequestParam Long categoriaId,
+            RedirectAttributes redirectAttributes) {
         try {
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
             tipo.setNombre(nombre);
@@ -135,7 +140,7 @@ public class TipoReporteControlador {
                 String nombreOriginal = iconoFile.getOriginalFilename();
                 Path rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreOriginal);
 
-// Verificar si ya existe un archivo con ese nombre
+                // Verificar si ya existe un archivo con ese nombre
                 if (Files.exists(rutaDestino)) {
                     // Si existe, se genera un nombre único para no sobrescribir
                     String nombreUnico = System.currentTimeMillis() + "_" + nombreOriginal;
@@ -145,7 +150,7 @@ public class TipoReporteControlador {
                     tipo.setIcono(nombreOriginal);
                 }
 
-// Guardar el archivo (nuevo o con nombre original)
+                // Guardar el archivo (nuevo o con nombre original)
                 Files.copy(iconoFile.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
 
             }
