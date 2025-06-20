@@ -40,5 +40,4 @@ public interface UsuarioInstitucionalRepositorio extends JpaRepository<UsuarioIn
     @Query("SELECT u FROM UsuarioInstitucional u WHERE LOWER(u.rol) = LOWER(:rol)")
     List<UsuarioInstitucional> findByRolNombre(@Param("rol") String rol);
 
-
 }

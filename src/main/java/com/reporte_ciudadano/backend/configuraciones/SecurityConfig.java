@@ -53,7 +53,7 @@ public class SecurityConfig {
                                 "/api/usuariosApp/**")
                         .permitAll()
                         .requestMatchers("/panel/superadmin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/usuarios/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/usuarios/**").hasAnyRole("SUPERADMIN", "ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/asignaciones/**").hasAnyRole("ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/reportes/**", "/instituciones/**").authenticated()
                         // ✅ Estas rutas requieren token de sesión válido (autenticado)
