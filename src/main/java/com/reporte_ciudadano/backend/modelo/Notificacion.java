@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,10 +29,11 @@ public class Notificacion {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
+    private Usuario usuario; // ✅ SIN @JsonManagedReference
 
     @ManyToOne
     @JoinColumn(name = "reporte_id")
+    @JsonIgnore // ✅ Esto evita la recursividad infinita
     private Reporte reporte;
 
     public Notificacion(String mensaje, Usuario usuario, LocalDateTime fecha) {
@@ -43,5 +46,4 @@ public class Notificacion {
     public void setReporte(Reporte reporte) {
         this.reporte = reporte;
     }
-
 }

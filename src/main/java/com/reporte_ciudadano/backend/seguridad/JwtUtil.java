@@ -14,7 +14,7 @@ public class JwtUtil {
 
     private final String CLAVE_SECRETA = "mi_clave_super_secreta_para_jwt_12345678901234567890123456789012"; // mínimo
                                                                                                              // 32 bytes
-    private final long DURACION_TOKEN_MS = 24 * 60 * 60 * 1000;
+    private final long DURACION_TOKEN_MS = 60L * 24 * 60 * 60 * 1000; // 60 días
 
     private Key getKey() {
         return Keys.hmacShaKeyFor(CLAVE_SECRETA.getBytes());
