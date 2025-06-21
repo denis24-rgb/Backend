@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -26,18 +28,34 @@ public class NotificacionControlador {
     }
 
     @PutMapping("/{notificacionId}/leida")
-    public void marcarComoLeida(@PathVariable Long usuarioId, @PathVariable Long notificacionId) {
-        notificacionServicio.marcarComoLeida(notificacionId);
+    public ResponseEntity<String> marcarComoLeida(
+            @PathVariable Long usuarioId,
+            @PathVariable Long notificacionId) {
+
+        Usuario usuario = usuarioServicio.obtenerPorId(usuarioId);
+
+        Notificacion notificacion = notificacionServicio.obtenerPorId(notificacionId);
+
+        if (!notificacion.getUsuario().getId().equals(usuario.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("❌ No tienes permiso para modificar esta notificación");
+        }
+
+        notificacion.setLeido(true);
+        notificacionServicio.guardar(notificacion);
+
+        return ResponseEntity.ok("✅ Notificación marcada como leída");
     }
 
     @DeleteMapping("/eliminar")
     public ResponseEntity<String> eliminarNotificaciones(
-            @PathVariable Long usuarioId,
-            @RequestBody List<Long> idsNotificaciones) {
+            @RequestBody List<Long> idsNotificaciones,
+            Principal principal) {
 
-        Usuario usuario = usuarioServicio.obtenerPorId(usuarioId);
+        // Obtener usuario desde el correo que viene en el token
+        Usuario usuario = usuarioServicio.obtenerPorCorreo(principal.getName());
 
-        // Eliminar notificaciones que pertenecen al usuario y están en la lista
+        // Filtrar solo notificaciones que pertenecen al usuario y están en la lista
         List<Notificacion> paraEliminar = notificacionServicio.obtenerPorUsuario(usuario)
                 .stream()
                 .filter(noti -> idsNotificaciones.contains(noti.getId()))
@@ -47,16 +65,20 @@ public class NotificacionControlador {
             notificacionServicio.eliminarTodas(paraEliminar);
             return ResponseEntity.ok("✅ Notificaciones eliminadas correctamente");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ No se encontraron notificaciones para eliminar");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("❌ No se encontraron notificaciones para eliminar");
         }
     }
 
     @GetMapping("/no-leidas")
-    public int contarNoLeidas(@PathVariable Long usuarioId) {
-        Usuario usuario = usuarioServicio.obtenerPorId(usuarioId);
-        return (int) notificacionServicio.obtenerPorUsuario(usuario).stream()
+    public ResponseEntity<Integer> contarNoLeidas(Principal principal) {
+        Usuario usuario = usuarioServicio.obtenerPorCorreo(principal.getName());
+
+        int cantidad = (int) notificacionServicio.obtenerPorUsuario(usuario).stream()
                 .filter(n -> !n.isLeido())
                 .count();
+
+        return ResponseEntity.ok(cantidad);
     }
 
 }

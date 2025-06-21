@@ -42,4 +42,14 @@ public class NotificacionServicio {
     public void eliminarTodas(List<Notificacion> notificaciones) {
         notificacionRepositorio.deleteAll(notificaciones);
     }
+
+    public Notificacion obtenerPorId(Long id) {
+        return notificacionRepositorio.findById(id)
+                .orElseThrow(() -> new RuntimeException("Notificación no encontrada"));
+    }
+
+    public void guardar(Notificacion notificacion) {
+        notificacionRepositorio.save(notificacion);
+    }
+
 }

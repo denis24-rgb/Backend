@@ -9,6 +9,7 @@ import com.reporte_ciudadano.backend.modelo.Usuario;
 import com.reporte_ciudadano.backend.repositorio.EvidenciaRepositorio;
 import com.reporte_ciudadano.backend.repositorio.UsuarioRepositorio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
+import com.reporte_ciudadano.backend.dto.HistorialDTO;
 import com.reporte_ciudadano.backend.dto.ReporteDetalleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -35,9 +36,12 @@ public class ReporteControlador {
     }
 
     @GetMapping("/por-usuario/{usuarioId}")
-    public ResponseEntity<List<Reporte>> obtenerReportesPorUsuario(@PathVariable Long usuarioId) {
+    public ResponseEntity<List<ReporteDetalleDTO>> obtenerReportesPorUsuario(@PathVariable Long usuarioId) {
         List<Reporte> reportes = servicio.buscarPorUsuarioId(usuarioId);
-        return ResponseEntity.ok(reportes);
+        List<ReporteDetalleDTO> dtoList = reportes.stream()
+                .map(ReporteDetalleDTO::new)
+                .toList();
+        return ResponseEntity.ok(dtoList);
     }
 
     @GetMapping
@@ -74,7 +78,8 @@ public class ReporteControlador {
 
             // ✅ Guardar y retornar
             Reporte creado = servicio.guardar(reporte);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("id", creado.getId()));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -104,7 +109,12 @@ public class ReporteControlador {
         if (historial.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró historial para el reporte");
         }
-        return ResponseEntity.ok(historial);
+
+        List<HistorialDTO> historialDTO = historial.stream()
+                .map(HistorialDTO::new)
+                .toList();
+
+        return ResponseEntity.ok(historialDTO);
     }
 
     @GetMapping("/{id}/detalle")

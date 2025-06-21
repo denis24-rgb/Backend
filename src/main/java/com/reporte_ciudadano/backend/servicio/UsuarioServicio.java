@@ -47,6 +47,11 @@ public class UsuarioServicio {
         usuarioRepositorio.deleteById(id);
     }
 
+    public Usuario obtenerPorCorreo(String correo) {
+        return usuarioRepositorio.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con correo: " + correo));
+    }
+
     public Usuario crearUsuarioConToken(String correo) {
         // Validar si el correo ya existe
         Optional<Usuario> usuarioExistente = usuarioRepositorio.findByCorreo(correo);
