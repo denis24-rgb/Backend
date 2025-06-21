@@ -62,7 +62,7 @@ public class SecurityConfig {
                                 "/api/reportes/**",
                                 "/archivos/**",
                                 "/api/contactos/**",
-                                "/api/evidencias/**",
+                                "/api/evidencias/subir",
                                 "/historial/**",
                                 "/api/tipos-reporte/**")
                         .authenticated()
