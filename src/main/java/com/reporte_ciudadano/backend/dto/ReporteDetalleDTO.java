@@ -22,7 +22,8 @@ public class ReporteDetalleDTO {
         this.fechaReporte = r.getFechaReporte().toString();
         this.hora = r.getHora().toString();
         this.ubicacion = r.getUbicacion();
-//        this.tipoReporte = r.getTipoReporte().getNombreTipo();
+        this.tipoReporte = r.getTipoReporte().getNombre();
+        this.imagenNombre = r.getTipoReporte().getIcono();
         this.usuario = r.getUsuario() != null ? r.getUsuario().getNombre() : "Anónimo";
     }
 }

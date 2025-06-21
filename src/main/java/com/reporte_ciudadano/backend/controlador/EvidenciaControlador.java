@@ -21,6 +21,7 @@ import java.security.Principal; // ⬅️ importante
 
 @RestController
 @RequestMapping("/api/evidencias")
+@CrossOrigin(origins = "*")
 public class EvidenciaControlador {
 
     private final EvidenciaServicio servicio;
@@ -61,24 +62,27 @@ public class EvidenciaControlador {
     public ResponseEntity<?> subirEvidencia(
             @RequestParam("reporte_id") Long reporteId,
             @RequestParam("tipo_evidencia") String tipo,
-            @RequestParam("archivo") MultipartFile archivo,
+            @RequestPart("archivo") MultipartFile archivo,
             Principal principal) {
 
         try {
+            if (archivo == null || archivo.isEmpty()) {
+                return ResponseEntity.badRequest().body("❌ Archivo no recibido o vacío");
+            }
+
             Reporte reporte = reporteRepositorio.findById(reporteId).orElse(null);
             if (reporte == null) {
                 return ResponseEntity.badRequest().body("Reporte no encontrado");
             }
+
             String correo = principal.getName();
             System.out.println("Usuario autenticado: " + correo);
 
-            // Verificar carpeta
             File directorio = new File(UPLOAD_DIR);
             if (!directorio.exists()) {
                 directorio.mkdirs();
             }
 
-            // Validar nombre
             String originalFilename = archivo.getOriginalFilename();
             if (originalFilename == null || originalFilename.isBlank()) {
                 return ResponseEntity.badRequest().body("Nombre de archivo inválido");
@@ -93,7 +97,7 @@ public class EvidenciaControlador {
             Evidencia evidencia = new Evidencia();
             evidencia.setReporte(reporte);
             evidencia.setTipoEvidencia(tipo);
-            evidencia.setUrl(rutaArchivo);
+            evidencia.setUrl(nombreArchivo); // Guardar solo el nombre del archivo
 
             evidenciaRepositorio.save(evidencia);
 
