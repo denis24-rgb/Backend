@@ -29,6 +29,7 @@ public class AvisoComunitario {
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion = LocalDateTime.now();
 
-    @Column(name = "fecha_eliminacion", insertable = false, updatable = false)
+    @Column(name = "fecha_eliminacion")
     private LocalDateTime fechaEliminacion;
+
 }
