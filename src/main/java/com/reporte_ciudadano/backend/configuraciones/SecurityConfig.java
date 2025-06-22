@@ -64,7 +64,8 @@ public class SecurityConfig {
                                 "/api/contactos/**",
                                 "/api/evidencias/subir",
                                 "/historial/**",
-                                "/api/tipos-reporte/**")
+                                "/api/tipos-reporte/**",
+                                "/api/avisos")
                         .authenticated()
                         .anyRequest().authenticated()
 
