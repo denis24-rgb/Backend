@@ -14,6 +14,8 @@ import com.reporte_ciudadano.backend.dto.ReporteDetalleDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.Paths;
@@ -45,8 +47,12 @@ public class ReporteControlador {
     }
 
     @GetMapping
-    public List<Reporte> listar() {
-        return servicio.listarTodos();
+    public ResponseEntity<?> listar() {
+        List<Reporte> reportes = servicio.listarTodos();
+        List<ReporteDetalleDTO> dtos = reportes.stream()
+                .map(ReporteDetalleDTO::new)
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
     @PostMapping
@@ -118,20 +124,25 @@ public class ReporteControlador {
     }
 
     @GetMapping("/{id}/detalle")
-    public ResponseEntity<?> obtenerReporteConEvidencia(@PathVariable Long id) {
+    @PreAuthorize("isAuthenticated()") // 🔐 Asegura que solo usuarios autenticados accedan
+    public ResponseEntity<?> obtenerReporteConEvidencia(@PathVariable Long id, Authentication authentication) {
+        String correo = authentication.getName(); // ← Se extrae desde el token JWT
+        System.out.println("📌 Acceso desde: " + correo);
+
         Reporte reporte = servicio.buscarPorId(id);
         if (reporte == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Reporte no encontrado");
         }
 
         ReporteDetalleDTO dto = new ReporteDetalleDTO(reporte);
+        // Mantener el icono (ya viene del tipoReporte, por ejemplo)
+        dto.setImagenNombre(reporte.getTipoReporte().getIcono());
 
         Evidencia evidencia = evidenciaRepositorio.findTopByReporteIdAndTipoEvidencia(id, "imagen");
         if (evidencia != null && evidencia.getUrl() != null) {
             String ruta = evidencia.getUrl();
             String soloNombre = Paths.get(ruta).getFileName().toString();
-            dto.setImagenNombre(soloNombre);
-
+            dto.setEvidenciaNombre(soloNombre);
         }
 
         return ResponseEntity.ok(dto);

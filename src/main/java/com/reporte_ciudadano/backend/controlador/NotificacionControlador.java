@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.dto.NotificacionDTO;
 import com.reporte_ciudadano.backend.modelo.Notificacion;
 import com.reporte_ciudadano.backend.modelo.Usuario;
 import com.reporte_ciudadano.backend.servicio.NotificacionServicio;
@@ -22,9 +23,14 @@ public class NotificacionControlador {
     private final UsuarioServicio usuarioServicio;
 
     @GetMapping
-    public List<Notificacion> obtenerNotificaciones(@PathVariable Long usuarioId) {
+    public List<NotificacionDTO> obtenerNotificaciones(@PathVariable Long usuarioId) {
         Usuario usuario = usuarioServicio.obtenerPorId(usuarioId);
-        return notificacionServicio.obtenerPorUsuario(usuario);
+
+        // Convertir las notificaciones en DTOs
+        return notificacionServicio.obtenerPorUsuario(usuario)
+                .stream()
+                .map(NotificacionDTO::new)
+                .toList();
     }
 
     @PutMapping("/{notificacionId}/leida")

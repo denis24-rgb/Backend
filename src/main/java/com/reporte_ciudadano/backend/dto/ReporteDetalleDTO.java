@@ -14,6 +14,7 @@ public class ReporteDetalleDTO {
     private String imagenNombre;
     private String tipoReporte;
     private String usuario;
+    private String evidenciaNombre;
 
     public ReporteDetalleDTO(Reporte r) {
         this.id = r.getId();
@@ -25,5 +26,9 @@ public class ReporteDetalleDTO {
         this.tipoReporte = r.getTipoReporte().getNombre();
         this.imagenNombre = r.getTipoReporte().getIcono();
         this.usuario = r.getUsuario() != null ? r.getUsuario().getNombre() : "Anónimo";
+        if (r.getEvidencias() != null && !r.getEvidencias().isEmpty()) {
+            this.evidenciaNombre = r.getEvidencias().get(0).getUrl(); // Primera imagen de evidencia
+        }
+
     }
 }
