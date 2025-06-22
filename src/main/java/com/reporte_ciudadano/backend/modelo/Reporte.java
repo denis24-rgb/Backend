@@ -43,10 +43,14 @@ public class Reporte {
     private LocalTime hora;
 
     @Column(nullable = false)
-    private String estado; //  "Recibido", "En Proceso", etc.
+    private String estado; // "Recibido", "En Proceso", etc.
 
     @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<HistorialEstado> historialEstados;
+
+    // PARA PODER MOSTRAR LA IMAGEN DE EVIDENCIA EN EL DTO REPORTEDETALLE
+    @OneToMany(mappedBy = "reporte", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Evidencia> evidencias;
 
     // ✅ Constructor vacío necesario para JPA
     public Reporte() {
