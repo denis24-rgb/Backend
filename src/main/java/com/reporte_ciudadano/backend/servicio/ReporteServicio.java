@@ -5,7 +5,11 @@ import com.reporte_ciudadano.backend.modelo.*;
 import com.reporte_ciudadano.backend.repositorio.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,6 +42,8 @@ public class ReporteServicio {
 
     private static final List<String> ESTADOS_VALIDOS = List.of(
             "recibido", "en proceso", "resuelto", "cerrado");
+    @Autowired
+    private AsignacionTecnicoRepositorio asignacionTecnicoRepositorio;
 
     public ReporteServicio(ReporteRepositorio reporteRepositorio,
             HistorialEstadoRepositorio historialEstadoRepositorio) {
@@ -238,6 +244,35 @@ public class ReporteServicio {
     }
     public List<Reporte> listarPorInstitucion(Long institucionId) {
         return reporteRepositorio.findByInstitucionId(institucionId);
+    }
+    @Transactional
+    public boolean cerrarReportePorOperador(Long reporteId) {
+        Optional<Reporte> optReporte = reporteRepositorio.findById(reporteId);
+        if (optReporte.isEmpty()) return false;
+
+        Reporte reporte = optReporte.get();
+        if (!"resuelto".equalsIgnoreCase(reporte.getEstado())) return false;
+
+        String estadoAnterior = reporte.getEstado();
+        reporte.setEstado("cerrado");
+        reporteRepositorio.save(reporte);
+
+        // Guardar historial
+        HistorialEstado historial = new HistorialEstado();
+        historial.setReporte(reporte);
+        historial.setEstadoAnterior(estadoAnterior);
+        historial.setEstadoNuevo("cerrado");
+        historial.setFechaCambio(LocalDateTime.now());
+        historialEstadoRepositorio.save(historial);
+
+        // Notificación al usuario
+        notificacionServicio.crear(reporte.getUsuario(), reporte,
+                "🔒 Tu reporte fue cerrado. Si persiste el problema, repórtalo nuevamente.");
+
+        return true;
+    }
+    public int contarTotalReportesPorInstitucion(Long institucionId) {
+        return reporteRepositorio.contarPorInstitucion(institucionId);
     }
 
 }
