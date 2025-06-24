@@ -105,5 +105,20 @@ public class AsignacionControlador {
         return "asignacion_reportes"; // nombre del HTML
 
     }
+    @PostMapping("/tomar")
+    public String tomarReporte(@RequestParam Long reporteId,
+                               @RequestParam Long tecnicoId,
+                               Model model) {
+
+        boolean ok = asignacionServicio.tomarReporte(reporteId, tecnicoId);
+
+        if (ok) {
+            model.addAttribute("mensaje", "Reporte tomado correctamente");
+        } else {
+            model.addAttribute("error", "No se puede tomar el reporte. Verifica el estado o la asignación.");
+        }
+
+        return "redirect:/asignaciones/reportes";
+    }
 
 }

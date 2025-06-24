@@ -37,5 +37,7 @@ public interface ReporteRepositorio extends JpaRepository<Reporte, Long> {
     //  Correcto: contar por institución y estados distintos al dado
     int countByInstitucionIdAndEstadoNot(Long institucionId, String estado);
     List<Reporte> findByInstitucionId(Long institucionId);
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE r.institucion.id = :institucionId")
+    int contarPorInstitucion(@Param("institucionId") Long institucionId);
 
 }

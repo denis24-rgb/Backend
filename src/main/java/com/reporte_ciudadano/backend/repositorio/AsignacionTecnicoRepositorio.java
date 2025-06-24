@@ -9,8 +9,10 @@ import java.util.Optional;
 public interface AsignacionTecnicoRepositorio extends JpaRepository<AsignacionTecnico, Long> {
     List<AsignacionTecnico> findByTecnicoId(Long tecnicoId);
     Optional<AsignacionTecnico> findByReporteIdAndTecnicoId(Long reporteId, Long tecnicoId);
-    long countByTecnicoIdAndReporte_Estado(Long tecnicoId, String estado);
-
     List<AsignacionTecnico> findByTecnicoIdAndReporte_Estado(Long tecnicoId, String estado);
     Optional<AsignacionTecnico> findByReporteId(Long reporteId);
+    long countByTecnicoIdAndReporte_EstadoIgnoreCase(Long tecnicoId, String estado);
+    long countByTecnicoIdAndReporte_EstadoIgnoreCaseAndFechaFinalizacionIsNotNull(Long tecnicoId, String estado);
+    long countByTecnicoIdAndReporte_EstadoIgnoreCaseAndFechaFinalizacionIsNull(Long tecnicoId, String estado);
+
 }
