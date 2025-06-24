@@ -4,15 +4,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 public class EmailService {
 
   @Autowired
   private JavaMailSender mailSender;
+  @Value("${app.url.backend}")
+  private String urlBackend;
 
   public void enviarCorreoVerificacion(String para, String token) {
-    String urlVerificacion = "http://192.168.2.108:8084/api/usuariosApp/confirmar?token=" + token;
+    String urlVerificacion = urlBackend + "/api/usuariosApp/confirmar?token=" + token;
 
     SimpleMailMessage mensaje = new SimpleMailMessage();
     mensaje.setTo(para);
@@ -25,7 +28,7 @@ public class EmailService {
   }
 
   public void enviarCorreoLoginNuevoDispositivo(String correo, String token) {
-    String urlLogin = "http://192.168.2.108:8084/api/usuariosApp/confirmar-login?token=" + token;
+    String urlLogin = urlBackend + "/api/usuariosApp/confirmar-login?token=" + token;
 
     SimpleMailMessage mensaje = new SimpleMailMessage();
     mensaje.setTo(correo);
