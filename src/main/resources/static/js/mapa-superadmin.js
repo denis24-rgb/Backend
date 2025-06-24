@@ -128,7 +128,7 @@ function initMap() {
                         zoomProgresivo();
                     }
 
-                    // 👉 Aquí tu modal no se afecta, se mantiene igual
+                    //  Aquí tu modal no se afecta, se mantiene igual
                     const html = `
         <p><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || 'N/A'}</p>
         <p><strong>Descripción:</strong> ${reporte.descripcion || 'Sin descripción'}</p>

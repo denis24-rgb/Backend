@@ -56,6 +56,10 @@ public class SecurityConfig {
                         .requestMatchers("/usuarios/**").hasAnyRole("SUPERADMIN", "ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/asignaciones/**").hasAnyRole("ADMINISTRADOR", "OPERADOR")
                         .requestMatchers("/reportes/**", "/instituciones/**").authenticated()
+                        .requestMatchers("/tecnico/**").hasRole("TECNICO")
+                        .requestMatchers("/panel/operador/**").hasRole("OPERADOR")
+
+
                         // ✅ Estas rutas requieren token de sesión válido (autenticado)
                         .requestMatchers(
                                 "/api/usuarios/**", // Incluye /{usuarioId}/notificaciones y más

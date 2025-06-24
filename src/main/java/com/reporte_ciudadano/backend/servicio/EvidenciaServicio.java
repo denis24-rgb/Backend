@@ -30,4 +30,8 @@ public class EvidenciaServicio {
     public void eliminar(Long id) {
         repositorio.deleteById(id);
     }
+    public Evidencia buscarPrimeraImagenPorReporte(Long reporteId) {
+        return repositorio.findTopByReporteIdAndTipoEvidencia(reporteId, "imagen");
+    }
+
 }
