@@ -1,11 +1,19 @@
-# Imagen base oficial de Java 17
+# Etapa 1: Construcción del jar
+FROM eclipse-temurin:17-jdk as build
+
+WORKDIR /app
+COPY . .
+
+# Compilar el proyecto (DskipTests para que no corra los tests en build)
+RUN ./mvnw clean package -DskipTests
+
+# Etapa 2: Imagen final para ejecutar
 FROM eclipse-temurin:17-jdk
 
-# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar el jar compilado al contenedor
-COPY target/*.jar app.jar
+# Copiar el jar compilado desde la etapa anterior
+COPY --from=build /app/target/*.jar app.jar
 
-# Comando para ejecutar la app
+# Ejecutar la app
 ENTRYPOINT ["java", "-jar", "app.jar"]
