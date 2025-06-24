@@ -17,35 +17,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class LoginControlador {
 
-    private final UsuarioInstitucionalServicio usuarioServicio;
-
-    // Mostrar el formulario de login
     @GetMapping("/login")
     public String mostrarFormularioLogin() {
         return "login"; // login.html en templates
     }
-
-    // Redirigir al panel según el rol del usuario
-    @GetMapping("/redirigir") //NUEVO DE LISETH
-    public String redireccionarPorRol(Authentication auth, HttpSession session) {
-        String correo = ((UserDetails) auth.getPrincipal()).getUsername();
-
-
-        Optional<UsuarioInstitucional> usuarioOpt = usuarioServicio.obtenerPorCorreo(correo);
-        if (usuarioOpt.isEmpty()) return "redirect:/login?error";
-
-        UsuarioInstitucional usuario = usuarioOpt.get();
-        session.setAttribute("usuarioId", usuario.getId());
-        session.setAttribute("usuarioRol", usuario.getRol().name());
-
-        return switch (usuario.getRol()) {
-            case TECNICO -> "redirect:/tecnico";
-            case OPERADOR -> "redirect:/operador";
-            case ADMINISTRADOR -> "redirect:/inicio";
-            case SUPERADMIN -> "redirect:/panel/superadmin";
-            default -> "redirect:/login?error=rol";
-        };
-    }
-
 }
+
 // FIN NUEVO CÓDIGO LISETH

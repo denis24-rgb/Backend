@@ -1,12 +1,12 @@
-// NUEVO CÓDIGO LISETH - Controlador del Técnico
 package com.reporte_ciudadano.backend.controlador;
-
 
 import com.reporte_ciudadano.backend.dto.ActualizacionTecnico;
 import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
+import com.reporte_ciudadano.backend.modelo.Evidencia;
 import com.reporte_ciudadano.backend.modelo.Reporte;
 import com.reporte_ciudadano.backend.modelo.UsuarioInstitucional;
 import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
+import com.reporte_ciudadano.backend.servicio.EvidenciaServicio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
 import com.reporte_ciudadano.backend.servicio.UsuarioInstitucionalServicio;
 import jakarta.servlet.http.HttpSession;
@@ -16,19 +16,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
 public class TecnicoControlador {
-
     private final ReporteServicio reporteServicio;
     private final UsuarioInstitucionalServicio usuarioServicio;
+    private final EvidenciaServicio evidenciaServicio;
+
+
+    @Autowired
+    private AsignacionTecnicoServicio asignacionTecnicoServicio;
 
     @GetMapping("/tecnico")
     public String vistaTecnico(
@@ -37,96 +39,54 @@ public class TecnicoControlador {
             HttpSession session) {
 
         Long tecnicoId = (Long) session.getAttribute("usuarioId");
-        if (tecnicoId == null) return "redirect:/login";
+        String rol = (String) session.getAttribute("usuarioRol");
+
+        if (tecnicoId == null || !"TECNICO".equals(rol)) {
+            return "redirect:/login";
+        }
 
         Optional<UsuarioInstitucional> tecnicoOptional = usuarioServicio.obtenerPorId(tecnicoId);
         if (tecnicoOptional.isEmpty()) return "redirect:/login";
 
         UsuarioInstitucional tecnico = tecnicoOptional.get();
-        List<Reporte> reportes = estado != null && !estado.isBlank()
-                ? asignacionTecnicoServicio.listarPorTecnicoYEstado(tecnicoId, estado)
-                : asignacionTecnicoServicio.listarPorTecnico(tecnicoId).stream().map(AsignacionTecnico::getReporte).toList();
 
-        // Estados REALES en la base de datos: RECIBIDO, EN_PROCESO, FINALIZADO
-        long totalPendientes = asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "recibido");
-        long totalProceso = asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "en proceso");
-        long totalFinalizado = asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "resuelto");
-        long totalCerrado = asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "cerrado");
+        List<AsignacionTecnico> asignaciones = (estado != null && !estado.isBlank())
+                ? asignacionTecnicoServicio.listarPorAsignacionYEstado(tecnicoId, estado)
+                : asignacionTecnicoServicio.listarPorTecnico(tecnicoId);
 
+        List<Map<String, Object>> reportesMap = asignaciones.stream().map(asig -> {
+            Reporte r = asig.getReporte();
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", r.getId());
+            map.put("descripcion", r.getDescripcion());
+            map.put("ubicacion", r.getUbicacion());
+            map.put("fechaReporte", r.getFechaReporte());
+            map.put("estado", r.getEstado());
+            return map;
+        }).toList();
+
+        long totalPendientes = asignacionTecnicoServicio.contarPendientes(tecnicoId);
+        long totalProceso = asignacionTecnicoServicio.contarEnProceso(tecnicoId);
+        long totalFinalizado = asignacionTecnicoServicio.contarResueltos(tecnicoId);
         model.addAttribute("tecnico", tecnico);
-        model.addAttribute("reportes", reportes);
+        model.addAttribute("reportes", reportesMap);
         model.addAttribute("estadoSeleccionado", estado);
         model.addAttribute("totalPendientes", totalPendientes);
         model.addAttribute("totalProceso", totalProceso);
         model.addAttribute("totalFinalizado", totalFinalizado);
-        model.addAttribute("totalCerrado", totalCerrado);
-
 
         return "tecnico";
     }
-
-    @PostMapping("/tecnico/actualizar-reporte")
-    @ResponseBody
-    public ResponseEntity<String> actualizarReporteTecnico(
-            @RequestParam("reporteId") Long reporteId,
-            @RequestParam("nuevoEstado") String nuevoEstado,
-            @RequestParam(value = "comentario", required = false) String comentario
-    ) {
-        try {
-            ActualizacionTecnico dto = new ActualizacionTecnico();
-            dto.setReporteId(reporteId);
-            dto.setNuevoEstado(nuevoEstado);
-            dto.setComentario(comentario);
-
-            boolean actualizado = reporteServicio.actualizarPorTecnico(dto);
-            return ResponseEntity.ok(actualizado ? "ok" : "error");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error interno: " + e.getMessage());
-        }
-    }
-
-    // Endpoint para obtener reportes por estado (AJAX)
-    @GetMapping("/tecnico/reportes")
-    @ResponseBody
-    public List<Reporte> obtenerReportesPorEstado(@RequestParam String estado, HttpSession session) {
-        Long tecnicoId = (Long) session.getAttribute("usuarioId");
-        return asignacionTecnicoServicio.listarPorTecnicoYEstado(tecnicoId, estado);
-    }
-
-    @GetMapping("/tecnico/reportes/contar")
-    @ResponseBody
-    public Map<String, Long> contarReportesPorEstado(HttpSession session) {
-        Long tecnicoId = (Long) session.getAttribute("usuarioId");
-
-        Map<String, Long> conteos = new HashMap<>();
-        conteos.put("recibido", asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "recibido"));
-        conteos.put("en proceso", asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "en proceso"));
-        conteos.put("resuelto", asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "resuelto"));
-        conteos.put("cerrado", asignacionTecnicoServicio.contarPorTecnicoYEstado(tecnicoId, "cerrado"));
-        return conteos;
-    }
-
-    // Endpoint para filtro dinámico por JS
-    @GetMapping("/tecnico/filtrar")
-    @ResponseBody
-    public List<Reporte> filtrarReportesPorEstado(@RequestParam String estado, HttpSession session) {
-        Long tecnicoId = (Long) session.getAttribute("usuarioId");
-        return (tecnicoId == null) ? List.of() : asignacionTecnicoServicio.listarPorTecnicoYEstado(tecnicoId, estado);
-    }
-
-    @Autowired
-    private AsignacionTecnicoServicio asignacionTecnicoServicio;
 
     @PostMapping("/tecnico/tomar-reporte")
     public String tomarReporte(
             @RequestParam Long reporteId,
             HttpSession session,
-            RedirectAttributes attrs
-    ) {
+            RedirectAttributes attrs) {
+
         Long tecnicoId = (Long) session.getAttribute("usuarioId");
 
-        boolean exito = asignacionTecnicoServicio.tomarReporte(reporteId, tecnicoId); // ✅ Aquí lo llamas como bean
+        boolean exito = asignacionTecnicoServicio.tomarReporte(reporteId, tecnicoId);
 
         if (exito) {
             attrs.addFlashAttribute("exito", "Has tomado el reporte.");
@@ -137,5 +97,95 @@ public class TecnicoControlador {
         return "redirect:/tecnico";
     }
 
+    @PostMapping("/tecnico/actualizar-reporte")
+    @ResponseBody
+    public ResponseEntity<String> actualizarReporteTecnico(
+            @RequestParam("reporteId") Long reporteId,
+            @RequestParam("comentario") String comentario,
+            @RequestParam(value = "imagenTrabajo", required = false) MultipartFile imagenTrabajo) {
+
+        try {
+            String nombreImagen = null;
+
+            if (imagenTrabajo != null && !imagenTrabajo.isEmpty()) {
+                String nombreUnico = UUID.randomUUID() + "_" + imagenTrabajo.getOriginalFilename();
+                String rutaCarpeta = "C:/imagenes-trabajos/"; // O la carpeta que uses en tu servidor
+                imagenTrabajo.transferTo(new java.io.File(rutaCarpeta + nombreUnico));
+                nombreImagen = nombreUnico;
+            }
+
+            boolean actualizado = asignacionTecnicoServicio.finalizarReportePorTecnico(reporteId, comentario, nombreImagen);
+            return ResponseEntity.ok(actualizado ? "ok" : "error");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error interno: " + e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/tecnico/reportes")
+    @ResponseBody
+    public List<Map<String, Object>> obtenerReportesPorEstado(@RequestParam String estado, HttpSession session) {
+        Long tecnicoId = (Long) session.getAttribute("usuarioId");
+
+        return asignacionTecnicoServicio.listarPorAsignacionYEstado(tecnicoId, estado).stream().map(asig -> {
+            Reporte r = asig.getReporte();
+
+            Evidencia evidencia = evidenciaServicio.buscarPrimeraImagenPorReporte(r.getId());
+            String urlImagen = evidencia != null ? evidencia.getUrl() : null;
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", r.getId());
+            map.put("descripcion", r.getDescripcion());
+            map.put("ubicacion", r.getUbicacion());
+            map.put("fechaReporte", r.getFechaReporte());
+            map.put("estado", r.getEstado());
+
+            // Aquí devolvemos el tipoReporte como un Map con nombre e icono
+            Map<String, Object> tipoReporteMap = new HashMap<>();
+            tipoReporteMap.put("nombre", r.getTipoReporte().getNombre());
+            tipoReporteMap.put("icono", r.getTipoReporte().getIcono());
+            map.put("tipoReporte", tipoReporteMap);
+
+            map.put("fechaAsignacion", asig.getFechaAsignacion());
+            map.put("asignadoPor", asig.getAsignador() != null ? asig.getAsignador().getNombre() : "Sin asignador");
+            map.put("imagen", urlImagen);
+
+            return map;
+        }).toList();
+    }
+
+
+    @GetMapping("/tecnico/reportes/contar")
+    @ResponseBody
+    public Map<String, Long> contarReportesPorEstado(HttpSession session) {
+        Long tecnicoId = (Long) session.getAttribute("usuarioId");
+
+        Map<String, Long> conteos = new HashMap<>();
+        conteos.put("recibido", asignacionTecnicoServicio.contarPendientes(tecnicoId));
+        conteos.put("en proceso", asignacionTecnicoServicio.contarEnProceso(tecnicoId));
+        conteos.put("resuelto", asignacionTecnicoServicio.contarResueltos(tecnicoId));
+
+        return conteos;
+    }
+
+    @GetMapping("/tecnico/filtrar")
+    @ResponseBody
+    public List<Map<String, Object>> filtrarReportesPorEstado(@RequestParam String estado, HttpSession session) {
+        Long tecnicoId = (Long) session.getAttribute("usuarioId");
+
+        if (tecnicoId == null) return List.of();
+
+        return asignacionTecnicoServicio.listarPorAsignacionYEstado(tecnicoId, estado).stream().map(asig -> {
+            Reporte r = asig.getReporte();
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", r.getId());
+            map.put("descripcion", r.getDescripcion());
+            map.put("ubicacion", r.getUbicacion());
+            map.put("fechaReporte", r.getFechaReporte());
+            map.put("estado", r.getEstado());
+            return map;
+        }).toList();
+    }
 }
-// FIN NUEVO CÓDIGO LISETH

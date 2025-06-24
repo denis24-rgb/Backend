@@ -84,21 +84,27 @@ body {
     border: 1px solid #dee2e6;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
-
 .tarjeta-reporte:hover {
-    transform: translateY(-3px);
+    transform: none; /* Evitas el pequeño salto que provoca re-dibujo */
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
+
 /* 🖼️ Imagen miniatura */
-.tarjeta-reporte img.img-thumbnail {
+/* SOLO las imágenes sueltas dentro de tarjeta-reporte tienen efecto hover */
+.tarjeta-reporte > img.img-thumbnail:hover {
+    transform: scale(1.05);
     transition: transform 0.2s ease-in-out;
+}
+
+.tarjeta-reporte img.img-thumbnail {
     border-radius: 0.5rem;
     border: 2px solid #dee2e6;
 }
 
-.tarjeta-reporte img.img-thumbnail:hover {
-    transform: scale(1.05);
+/* Evitar parpadeo en imágenes dentro de botones */
+.btn-evidencia img:hover {
+    transform: none;
 }
 
 /* 📍 Estado */
@@ -129,6 +135,8 @@ body {
 .modal-body img {
     border-radius: 1rem;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 100%;
+    height: auto;
 }
 
 /* ❌ Modal eliminar */
