@@ -212,6 +212,7 @@ public class UsuarioControlador {
         usuarioServicio.guardarUsuario(usuarioAutenticado);
 
         return ResponseEntity.ok(usuarioAutenticado);
+
     }
 
     @PutMapping("/token-dispositivo")
@@ -223,6 +224,7 @@ public class UsuarioControlador {
         usuarioServicio.actualizarTokenDispositivo(correo, token);
 
         return ResponseEntity.ok("✅ Token del dispositivo actualizado correctamente");
+
     }
 
 }

@@ -224,6 +224,7 @@ public class ReporteServicio {
         // Asignar nuevo estado directamente (ya no hay entidad EstadoReporte)
         reporte.setEstado(nuevoEstadoSolicitado);
 
+
         // Guardar comentario solo si se resuelve el reporte
         if ("resuelto".equals(nuevoEstadoSolicitado)) {
             reporte.setDescripcion(reporte.getDescripcion() + "\n[Comentario técnico]: " + dto.getComentario());
@@ -280,6 +281,9 @@ public class ReporteServicio {
         return true;
     }
 
+
+
+    
     public int contarTotalReportesPorInstitucion(Long institucionId) {
         return reporteRepositorio.contarPorInstitucion(institucionId);
     }
