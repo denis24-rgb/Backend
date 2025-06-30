@@ -31,5 +31,3 @@ build/
 
 # Ignorar configuración de Firebase
 src/main/resources/firebase-config.json
-
-.vscode/
