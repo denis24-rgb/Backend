@@ -1,0 +1,35 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "postgreSQL",
+            "database": "seguridad_ciudadana",
+            "username": "postgresql"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "MiBaseDeDatos",
+            "database": "seguridad_ciudadana",
+            "username": "postgres",
+            "password": "postgres123"
+        },
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Backend",
+            "database": "reporte_ciudadano",
+            "username": "postgres",
+            "password": "postgres123"
+        }
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
+}

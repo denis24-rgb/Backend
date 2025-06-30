@@ -212,6 +212,19 @@ public class UsuarioControlador {
         usuarioServicio.guardarUsuario(usuarioAutenticado);
 
         return ResponseEntity.ok(usuarioAutenticado);
+
+    }
+
+    @PutMapping("/token-dispositivo")
+    public ResponseEntity<String> actualizarTokenDispositivo(
+            @RequestParam String token,
+            Principal principal) {
+
+        String correo = principal.getName(); // Viene del JWT
+        usuarioServicio.actualizarTokenDispositivo(correo, token);
+
+        return ResponseEntity.ok("✅ Token del dispositivo actualizado correctamente");
+
     }
 
 }

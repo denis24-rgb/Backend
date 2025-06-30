@@ -95,8 +95,12 @@ public class ReporteControlador {
     }
 
     @PutMapping("/{id}/estado")
-    public Reporte cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
-        return servicio.cambiarEstado(id, nuevoEstado);
+    public ResponseEntity<String> cambiarEstado(@PathVariable Long id, @RequestParam String nuevoEstado) {
+        Reporte actualizado = servicio.cambiarEstado(id, nuevoEstado);
+        if (actualizado == null) {
+            return ResponseEntity.badRequest().body("❌ No se pudo actualizar el estado");
+        }
+        return ResponseEntity.ok("✅ Estado actualizado correctamente");
     }
 
     @GetMapping("/{id}")

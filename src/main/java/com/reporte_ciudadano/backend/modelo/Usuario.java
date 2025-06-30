@@ -104,4 +104,15 @@ public class Usuario {
         this.tokenSesion = tokenSesion;
     }
 
+    @Column(name = "token_dispositivo")
+    private String tokenDispositivo;
+
+    public String getTokenDispositivo() {
+        return tokenDispositivo;
+    }
+
+    public void setTokenDispositivo(String tokenDispositivo) {
+        this.tokenDispositivo = tokenDispositivo;
+    }
+
 }

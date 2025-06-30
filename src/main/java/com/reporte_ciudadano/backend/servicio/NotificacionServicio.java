@@ -15,16 +15,27 @@ import java.util.List;
 public class NotificacionServicio {
 
     private final NotificacionRepositorio notificacionRepositorio;
+    private final NotificacionPushServicio notificacionPushServicio;
 
     public void crear(Usuario usuario, String mensaje) {
         Notificacion noti = new Notificacion(mensaje, usuario, LocalDateTime.now());
         notificacionRepositorio.save(noti);
+
+        if (usuario.getTokenDispositivo() != null) {
+            notificacionPushServicio.enviarNotificacion(usuario.getTokenDispositivo(), "🔔 Nueva notificación",
+                    mensaje);
+        }
     }
 
     public void crear(Usuario usuario, Reporte reporte, String mensaje) {
         Notificacion noti = new Notificacion(mensaje, usuario, LocalDateTime.now());
         noti.setReporte(reporte);
         notificacionRepositorio.save(noti);
+
+        if (usuario.getTokenDispositivo() != null) {
+            notificacionPushServicio.enviarNotificacion(usuario.getTokenDispositivo(), "🔔 Nueva notificación",
+                    mensaje);
+        }
     }
 
     public List<Notificacion> obtenerPorUsuario(Usuario usuario) {
