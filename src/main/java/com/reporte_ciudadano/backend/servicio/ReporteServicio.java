@@ -102,6 +102,7 @@ public class ReporteServicio {
         historialEstadoRepositorio.save(historial);
         // Creamos la notificacion
         notificacionServicio.crear(usuario, guardado, "📢 Tu reporte fue enviado correctamente.");
+
         return guardado;
     }
 
@@ -232,26 +233,33 @@ public class ReporteServicio {
         reporteRepositorio.save(reporte);
         return true;
     }
+
     public List<String> listarEstadosUnicos() {
         return ESTADOS_VALIDOS;
     }
+
     public Reporte obtenerPorIdObligatorio(Long id) {
         return reporteRepositorio.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reporte no encontrado"));
     }
+
     public void eliminarPorId(Long id) {
         reporteRepositorio.deleteById(id);
     }
+
     public List<Reporte> listarPorInstitucion(Long institucionId) {
         return reporteRepositorio.findByInstitucionId(institucionId);
     }
+
     @Transactional
     public boolean cerrarReportePorOperador(Long reporteId) {
         Optional<Reporte> optReporte = reporteRepositorio.findById(reporteId);
-        if (optReporte.isEmpty()) return false;
+        if (optReporte.isEmpty())
+            return false;
 
         Reporte reporte = optReporte.get();
-        if (!"resuelto".equalsIgnoreCase(reporte.getEstado())) return false;
+        if (!"resuelto".equalsIgnoreCase(reporte.getEstado()))
+            return false;
 
         String estadoAnterior = reporte.getEstado();
         reporte.setEstado("cerrado");
@@ -271,6 +279,7 @@ public class ReporteServicio {
 
         return true;
     }
+
     public int contarTotalReportesPorInstitucion(Long institucionId) {
         return reporteRepositorio.contarPorInstitucion(institucionId);
     }

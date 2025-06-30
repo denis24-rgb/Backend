@@ -6,6 +6,7 @@ import com.reporte_ciudadano.backend.seguridad.JwtUtil;
 import com.reporte_ciudadano.backend.seguridad.UsuarioAppDetalles;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,18 @@ public class UsuarioServicio {
         }
 
         return Optional.empty();
+    }
+
+    @Transactional
+    public void actualizarTokenDispositivo(String correo, String tokenDispositivo) {
+        // Limpiar el token en otros usuarios
+        usuarioRepositorio.limpiarTokenDispositivoEnOtrosUsuarios(tokenDispositivo, correo);
+
+        // Asignar token al usuario actual
+        Usuario usuario = usuarioRepositorio.findByCorreo(correo)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        usuario.setTokenDispositivo(tokenDispositivo);
+        usuarioRepositorio.save(usuario);
     }
 
 }
