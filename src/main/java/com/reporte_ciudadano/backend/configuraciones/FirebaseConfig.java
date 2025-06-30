@@ -15,6 +15,7 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() {
         try {
+
             String configPath = System.getenv("FIREBASE_CONFIG_PATH");
             if (configPath == null || configPath.isEmpty()) {
                 throw new IllegalStateException("⚠️ La variable de entorno FIREBASE_CONFIG_PATH no está configurada.");
