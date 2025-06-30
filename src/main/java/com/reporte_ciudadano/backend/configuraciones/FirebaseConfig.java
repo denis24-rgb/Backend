@@ -6,8 +6,8 @@ import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 @Configuration
 public class FirebaseConfig {
@@ -15,7 +15,12 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() {
         try {
-            InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("firebase-config.json");
+            String configPath = System.getenv("FIREBASE_CONFIG_PATH");
+            if (configPath == null || configPath.isEmpty()) {
+                throw new IllegalStateException("⚠️ La variable de entorno FIREBASE_CONFIG_PATH no está configurada.");
+            }
+
+            FileInputStream serviceAccount = new FileInputStream(configPath);
 
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
