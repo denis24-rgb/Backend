@@ -84,22 +84,30 @@ body {
     border: 1px solid #dee2e6;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
+
 .tarjeta-reporte:hover {
-    transform: none; /* Evitas el pequeño salto que provoca re-dibujo */
+    transform: none;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-
-/* 🖼️ Imagen miniatura */
-/* SOLO las imágenes sueltas dentro de tarjeta-reporte tienen efecto hover */
-.tarjeta-reporte > img.img-thumbnail:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease-in-out;
-}
-
+/* 🖼️ Imagen miniatura dentro de la tarjeta */
 .tarjeta-reporte img.img-thumbnail {
     border-radius: 0.5rem;
     border: 2px solid #dee2e6;
+}
+
+.tarjeta-reporte .btn-evidencia img.img-thumbnail {
+    width: 100px;
+    height: auto;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 2px solid #dee2e6;
+}
+
+/* Hover solo en imágenes sueltas */
+.tarjeta-reporte > img.img-thumbnail:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease-in-out;
 }
 
 /* Evitar parpadeo en imágenes dentro de botones */
@@ -119,7 +127,7 @@ body {
     font-size: 0.9rem;
 }
 
-/* 👤 Técnico badge */
+/* 👷 Técnico badge */
 .badge.bg-success {
     font-size: 0.85rem;
     padding: 0.3em 0.7em;
@@ -129,14 +137,6 @@ body {
 /* 🧾 Formularios */
 .input-group-sm select.form-select {
     font-size: 0.85rem;
-}
-
-/* 📷 Modal evidencia */
-.modal-body img {
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    max-width: 100%;
-    height: auto;
 }
 
 /* ❌ Modal eliminar */
@@ -168,4 +168,37 @@ body {
         align-items: flex-start !important;
         gap: 1rem;
     }
+}
+
+/* 🌑 SOLO modales de evidencias tienen fondo oscuro y zoom */
+.modal-evidencia .modal-content {
+    background-color: #1c1c1c;
+    color: #fff;
+}
+
+.modal-evidencia .modal-header {
+    background-color: #343a40;
+    border-bottom: 1px solid #495057;
+}
+
+.modal-evidencia .modal-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+    overflow: hidden;
+    position: relative;
+}
+
+.modal-evidencia .modal-body img {
+    width: auto;
+    height: auto;
+    max-width: 30%;
+    max-height: 30%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+    cursor: grab;
+    user-select: none;
+    display: block;
+    margin: auto;
 }

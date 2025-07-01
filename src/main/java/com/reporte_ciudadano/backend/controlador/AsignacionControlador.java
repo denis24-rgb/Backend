@@ -12,6 +12,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -72,39 +76,105 @@ public class AsignacionControlador {
     }
 
     @GetMapping("/reportes")
-
     public String verAsignacionReportes(Model model, java.security.Principal principal) {
+
         UsuarioInstitucional usuario = usuarioServicio.obtenerPorCorreo(principal.getName()).orElse(null);
 
-        List<Reporte> reportes;
         List<UsuarioInstitucional> tecnicos;
 
         if (usuario.getRol() == RolInstitucional.SUPERADMIN) {
-            // 🔓 SUPERADMIN ve todos los reportes
-            reportes = reporteServicio.listarPorEstados("en proceso", "resuelto", "cerrado");
-            tecnicos = usuarioServicio.listarTodos()
-                    .stream()
+            tecnicos = usuarioServicio.listarTodos().stream()
                     .filter(u -> u.getRol() == RolInstitucional.TECNICO)
                     .collect(Collectors.toList());
         } else {
-            // 🔐 Técnicos o administradores ven solo su institución
             Long institucionId = usuario.getInstitucion().getId();
-
-            reportes = reporteServicio.listarPorEstadosYInstitucion(institucionId, "en proceso", "resuelto", "cerrado");
-
-            tecnicos = usuarioServicio.listarTodos()
-                    .stream()
+            tecnicos = usuarioServicio.listarTodos().stream()
                     .filter(u -> u.getRol() == RolInstitucional.TECNICO &&
                             u.getInstitucion().getId().equals(institucionId))
                     .collect(Collectors.toList());
         }
 
-        model.addAttribute("reportes", reportes);
+        Map<Long, Integer> conteoAsignaciones = new HashMap<>();
+        for (UsuarioInstitucional tecnico : tecnicos) {
+            int cantidad = asignacionServicio.listarPorTecnico(tecnico.getId()).size();
+            conteoAsignaciones.put(tecnico.getId(), cantidad);
+        }
+
         model.addAttribute("tecnicos", tecnicos);
+        model.addAttribute("conteoAsignaciones", conteoAsignaciones);
+        model.addAttribute("tecnicoSeleccionado", null);
+        model.addAttribute("asignaciones", new ArrayList<>());
+        model.addAttribute("enProceso", 0);
+        model.addAttribute("resueltos", 0);
+        model.addAttribute("cerrados", 0);
+        model.addAttribute("tecnicoSeleccionadoId", -1L);
 
-        return "asignacion_reportes"; // nombre del HTML
-
+        return "asignacion_reportes";
     }
+
+
+    @GetMapping("/reportes/{tecnicoId}")
+    public String verAsignacionesPorTecnico(@PathVariable Long tecnicoId, Model model, java.security.Principal principal) {
+
+        UsuarioInstitucional usuario = usuarioServicio.obtenerPorCorreo(principal.getName()).orElse(null);
+
+        List<UsuarioInstitucional> tecnicos;
+
+        if (usuario.getRol() == RolInstitucional.SUPERADMIN) {
+            tecnicos = usuarioServicio.listarTodos().stream()
+                    .filter(u -> u.getRol() == RolInstitucional.TECNICO)
+                    .collect(Collectors.toList());
+        } else {
+            Long institucionId = usuario.getInstitucion().getId();
+            tecnicos = usuarioServicio.listarTodos().stream()
+                    .filter(u -> u.getRol() == RolInstitucional.TECNICO &&
+                            u.getInstitucion().getId().equals(institucionId))
+                    .collect(Collectors.toList());
+        }
+
+        // Obtener el técnico seleccionado
+        UsuarioInstitucional tecnicoSeleccionado = usuarioServicio.obtenerPorId(tecnicoId).orElse(null);
+
+        if (tecnicoSeleccionado == null) {
+            return "redirect:/asignaciones/reportes";
+        }
+
+        // Obtener asignaciones de ese técnico
+        List<AsignacionTecnico> asignaciones = asignacionServicio.listarPorTecnico(tecnicoId);
+
+        // Contar estados directamente sobre las asignaciones
+        long enProceso = asignaciones.stream()
+                .filter(a -> a.getReporte().getEstado().equalsIgnoreCase("en proceso"))
+                .count();
+
+        long resueltos = asignaciones.stream()
+                .filter(a -> a.getReporte().getEstado().equalsIgnoreCase("resuelto"))
+                .count();
+
+        long cerrados = asignaciones.stream()
+                .filter(a -> a.getReporte().getEstado().equalsIgnoreCase("cerrado"))
+                .count();
+
+        // 🔧 Contar asignaciones por técnico
+        Map<Long, Integer> conteoAsignaciones = new HashMap<>();
+        for (UsuarioInstitucional tecnico : tecnicos) {
+            int cantidad = asignacionServicio.listarPorTecnico(tecnico.getId()).size();
+            conteoAsignaciones.put(tecnico.getId(), cantidad);
+        }
+
+        model.addAttribute("tecnicos", tecnicos);
+        model.addAttribute("conteoAsignaciones", conteoAsignaciones);
+        model.addAttribute("tecnicoSeleccionado", tecnicoSeleccionado);
+        model.addAttribute("asignaciones", asignaciones);
+        model.addAttribute("enProceso", enProceso);
+        model.addAttribute("resueltos", resueltos);
+        model.addAttribute("cerrados", cerrados);
+        model.addAttribute("tecnicoSeleccionadoId", tecnicoId);
+
+        return "asignacion_reportes";
+    }
+
+
     @PostMapping("/tomar")
     public String tomarReporte(@RequestParam Long reporteId,
                                @RequestParam Long tecnicoId,

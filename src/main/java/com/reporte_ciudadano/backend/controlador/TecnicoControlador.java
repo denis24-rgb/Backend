@@ -142,7 +142,6 @@ public class TecnicoControlador {
             map.put("fechaReporte", r.getFechaReporte());
             map.put("estado", r.getEstado());
 
-            // Aquí devolvemos el tipoReporte como un Map con nombre e icono
             Map<String, Object> tipoReporteMap = new HashMap<>();
             tipoReporteMap.put("nombre", r.getTipoReporte().getNombre());
             tipoReporteMap.put("icono", r.getTipoReporte().getIcono());
@@ -151,7 +150,7 @@ public class TecnicoControlador {
             map.put("fechaAsignacion", asig.getFechaAsignacion());
             map.put("asignadoPor", asig.getAsignador() != null ? asig.getAsignador().getNombre() : "Sin asignador");
             map.put("imagen", urlImagen);
-
+            map.put("imagenTrabajo", asig.getImagenTrabajo()); // imagen del trabajo realizado
             return map;
         }).toList();
     }

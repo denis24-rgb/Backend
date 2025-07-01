@@ -37,7 +37,16 @@ public class AsignacionTecnicoServicio {
     }
 
     public List<AsignacionTecnico> listarPorTecnico(Long tecnicoId) {
-        return asignacionRepo.findByTecnicoId(tecnicoId);
+        List<AsignacionTecnico> asignaciones = asignacionRepo.findByTecnicoId(tecnicoId);
+
+        // Forzar carga de evidencias de los reportes
+        for (AsignacionTecnico asignacion : asignaciones) {
+            if (asignacion.getReporte() != null) {
+                asignacion.getReporte().getEvidencias().size();
+            }
+        }
+
+        return asignaciones;
     }
 
     public AsignacionTecnico guardar(AsignacionTecnico asignacion) {

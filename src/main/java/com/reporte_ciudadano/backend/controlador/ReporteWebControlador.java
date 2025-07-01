@@ -1,7 +1,9 @@
 package com.reporte_ciudadano.backend.controlador;
 
 import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
+import com.reporte_ciudadano.backend.modelo.Evidencia;
 import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
+import com.reporte_ciudadano.backend.servicio.EvidenciaServicio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
 import com.reporte_ciudadano.backend.servicio.UsuarioInstitucionalServicio;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +23,8 @@ public class ReporteWebControlador {
 
     @Autowired
     private ReporteServicio reporteServicio;
-
+    @Autowired
+    private EvidenciaServicio evidenciaServicio;
     @Autowired
     private UsuarioInstitucionalServicio usuarioServicio;
 
@@ -50,10 +53,17 @@ public class ReporteWebControlador {
                         a -> a
                 ));
 
+        Map<Long, List<Evidencia>> evidenciasPorReporte = reportes.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getId(),
+                        r -> evidenciaServicio.listarPorReporte(r.getId())
+                ));
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("reportes", reportes);
         model.addAttribute("tecnicos", tecnicos);
         model.addAttribute("asignaciones", asignaciones);
+        model.addAttribute("evidenciasPorReporte", evidenciasPorReporte);
         model.addAttribute("estados", List.of("recibido", "en proceso", "resuelto", "cerrado"));
 
         var tipos = reportes.stream()
