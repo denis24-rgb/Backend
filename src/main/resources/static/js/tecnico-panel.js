@@ -1,6 +1,11 @@
 let mapa;
 let marcadores = [];
 
+let scale = 1;
+let targetScale = 1;
+let animating = false;
+
+
 
 // Filtro por estado
 function filtrarPorEstado(estado) {
@@ -24,7 +29,7 @@ function cargarReportesPorEstado(estado) {
             const contenedor = document.getElementById("contenedor-reportes");
             contenedor.innerHTML = "";
 
-            // Limpiar marcadores anteriores
+            // Limpiar marcadores anteriores (SOLO UNA VEZ)
             marcadores.forEach(m => m.setMap(null));
             marcadores = [];
 
@@ -33,7 +38,7 @@ function cargarReportesPorEstado(estado) {
                 return;
             }
 
-
+            // Recorremos los reportes
             data.forEach(reporte => {
                 const card = document.createElement("div");
                 card.className = "card card-reporte mb-3";
@@ -51,9 +56,18 @@ function cargarReportesPorEstado(estado) {
 
                 if (reporte.imagen) {
                     html += `
-                        <div class="mb-2">
-                            <img src="/imagenes/${reporte.imagen}" alt="Imagen del reporte" class="img-fluid rounded imagen-reporte">
-                        </div>`;
+        <div class="mb-2">
+            <p class="mb-1 fw-bold">Imagen del reporte:</p>
+            <img src="/api/evidencias/ver/${reporte.imagen}" alt="Imagen del reporte" class="img-fluid rounded imagen-reporte">
+        </div>`;
+                }
+
+                if (reporte.imagenTrabajo) {
+                    html += `
+        <div class="mb-2">
+            <p class="mb-1 fw-bold">Trabajo realizado:</p>
+            <img src="/api/trabajos/ver/${reporte.imagenTrabajo}" alt="Trabajo realizado" class="img-fluid rounded imagen-reporte">
+        </div>`;
                 }
 
                 html += `<p><strong>Estado:</strong> ${estadoVisible}</p>`;
@@ -61,45 +75,37 @@ function cargarReportesPorEstado(estado) {
                 if (reporte.estado === "recibido") {
                     html += `
                         <div class="d-flex gap-2 mt-3">
-                            <button class="btn btn-sm btn-outline-primary btn-ubicar" data-id="${reporte.id}">Ubicar</button>
                             <button class="btn btn-sm btn-warning btn-tomar" data-id="${reporte.id}">Tomar reporte</button>
                         </div>`;
                 }
 
                 if (reporte.estado === "en proceso") {
                     html += `
-        <form class="form-finalizar mt-3" data-id="${reporte.id}" enctype="multipart/form-data">
-            <input type="hidden" name="nuevoEstado" value="resuelto" />
-            
-            <div class="mb-2">
-                <label class="form-label">Comentario del técnico:</label>
-                <textarea name="comentario" class="form-control form-control-sm" rows="2"
-                          placeholder="Breve descripción de la intervención..." required></textarea>
-            </div>
-            
-            <div class="mb-2">
-                <label class="form-label">Evidencia (opcional):</label>
-                <input type="file" name="imagenTrabajo" accept="image/*" class="form-control form-control-sm" />
-            </div>
-            
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-sm btn-outline-primary btn-ubicar" data-id="${reporte.id}">Ubicar</button>
-                <button type="submit" class="btn btn-sm btn-success">Finalizar</button>
-            </div>
-        </form>`;
+                        <form class="form-finalizar mt-3" data-id="${reporte.id}" enctype="multipart/form-data">
+                            <input type="hidden" name="nuevoEstado" value="resuelto" />
+                            
+                            <div class="mb-2">
+                                <label class="form-label">Comentario del técnico:</label>
+                                <textarea name="comentario" class="form-control form-control-sm" rows="2"
+                                          placeholder="Breve descripción de la intervención..." required></textarea>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label">Evidencia (opcional):</label>
+                                <input type="file" name="imagenTrabajo" accept="image/*" class="form-control form-control-sm" />
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-sm btn-success">Finalizar</button>
+                            </div>
+                        </form>`;
                 }
-
 
                 html += `</div>`;
                 card.innerHTML = html;
                 contenedor.appendChild(card);
 
                 // Crear marcador si tiene ubicación
-                // Limpiar marcadores anteriores
-                marcadores.forEach(m => m.setMap(null));
-                marcadores = [];
-
-// Crear marcador si tiene ubicación
                 if (reporte.ubicacion) {
                     const [lat, lng] = reporte.ubicacion.split(",").map(Number);
 
@@ -127,12 +133,9 @@ function cargarReportesPorEstado(estado) {
 
                     marcadores.push(marker);
                 }
-
             });
 
-
             activarEventos();
-
         });
 }
 
@@ -164,32 +167,37 @@ function formatearFecha(fechaISO) {
 
 // Activar botones y formularios
 function activarEventos() {
-    // Click en imagen para abrir modal
+    // Click en imagen del reporte para abrir modal
     document.querySelectorAll(".imagen-reporte").forEach(img => {
         img.addEventListener("click", () => {
             const src = img.getAttribute("src");
             const imagenModal = document.getElementById("imagenModalAmpliada");
             imagenModal.src = src;
-            imagenModal.style.transform = "scale(1)"; // Reset zoom
             scale = 1;
+            imagenModal.style.transform = `scale(${scale})`;
+            imagenModal.style.transformOrigin = "center center";
             const modal = new bootstrap.Modal(document.getElementById("modalImagen"));
             modal.show();
         });
     });
 
-    // Zoom con la rueda del mouse
-    const imagenModal = document.getElementById("imagenModalAmpliada");
-    let scale = 1;
+    // Click en imagen del trabajo para abrir modal
+    document.querySelectorAll(".imagen-trabajo").forEach(img => {
+        img.addEventListener("click", () => {
+            const src = img.getAttribute("src");
+            const imagenModal = document.getElementById("imagenModalAmpliada");
+            imagenModal.src = src;
 
-    imagenModal.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        const delta = e.deltaY;
-        if (delta < 0) {
-            scale += 0.1;
-        } else {
-            scale = Math.max(1, scale - 0.1);
-        }
-        imagenModal.style.transform = `scale(${scale})`;
+// Reseteo completo del zoom
+            scale = 1;
+            targetScale = 1;
+            animating = false;
+            imagenModal.style.transform = `scale(1)`;
+            imagenModal.style.transformOrigin = "center center";
+
+            const modal = new bootstrap.Modal(document.getElementById("modalImagen"));
+            modal.show();
+        });
     });
 
     // Tomar reporte
@@ -244,8 +252,6 @@ function activarEventos() {
         });
     });
 
-
-
     // Botón ubicar en mapa
     document.querySelectorAll(".btn-ubicar").forEach(btn => {
         btn.addEventListener("click", () => {
@@ -259,26 +265,111 @@ function activarEventos() {
 function ubicarEnMapa(id) {
     const marcador = marcadores.find(m => m.customId == id);
     if (marcador) {
-        mapa.setCenter(marcador.getPosition());
-        mapa.setZoom(16);
+
+        // Paso 1: Si ya está muy cerca, aleja un poco
+        const targetZoom = 18;
+        const zoomActual = mapa.getZoom();
+
+        if (zoomActual >= targetZoom - 1) {
+            mapa.setZoom(15); // Aleja un poco para que se note el deslizamiento
+        }
+
+        // Paso 2: Desliza hacia el marcador
+        mapa.panTo(marcador.getPosition());
+
+        // Paso 3: Después de un pequeño retardo, hace el zoom suave
+        setTimeout(() => {
+            let zoom = mapa.getZoom();
+            const intervalo = setInterval(() => {
+                zoom++;
+                mapa.setZoom(zoom);
+                if (zoom >= targetZoom) {
+                    clearInterval(intervalo);
+                }
+            }, 200);
+        }, 500); // Espera que termine el deslizamiento antes de hacer zoom
     }
 }
+
 
 window.initMap = () => {
     inicializarMapa();
     cargarReportesPorEstado("recibido");
     contarReportes();
 };
-const imagenModal = document.getElementById("imagenModalAmpliada");
-let scale = 1;
+document.addEventListener("DOMContentLoaded", () => {
+    const imagenModal = document.getElementById("imagenModalAmpliada");
 
-imagenModal.addEventListener("wheel", (e) => {
-    e.preventDefault();
-    const delta = e.deltaY;
-    if (delta < 0) {
-        scale += 0.1;
-    } else {
-        scale = Math.max(1, scale - 0.1);
+    let currentWheelHandler = null;
+
+    // Cada vez que se abre el modal, se reinicia el zoom y el listener
+    function prepararImagenZoom() {
+        scale = 1;
+        targetScale = 1;
+        animating = false;
+        imagenModal.style.transform = `scale(1)`;
+        imagenModal.style.transformOrigin = "center center";
+
+        // Eliminar cualquier listener anterior
+        if (currentWheelHandler) {
+            imagenModal.removeEventListener("wheel", currentWheelHandler);
+        }
+
+        // Crear y guardar nuevo listener
+        currentWheelHandler = (e) => {
+            e.preventDefault();
+
+            const rect = imagenModal.getBoundingClientRect();
+            const offsetX = e.clientX - rect.left;
+            const offsetY = e.clientY - rect.top;
+
+            const xPercent = (offsetX / rect.width) * 100;
+            const yPercent = (offsetY / rect.height) * 100;
+
+            imagenModal.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+
+            const delta = e.deltaY;
+            if (delta < 0) {
+                targetScale += 0.2;
+            } else {
+                targetScale = Math.max(1, targetScale - 0.2);
+            }
+
+            if (!animating) {
+                animating = true;
+                requestAnimationFrame(animateZoom);
+            }
+        };
+
+        imagenModal.addEventListener("wheel", currentWheelHandler);
     }
-    imagenModal.style.transform = `scale(${scale})`;
+
+    // Cuando clickeás una imagen, se prepara el zoom
+    document.body.addEventListener("click", (e) => {
+        if (e.target.classList.contains("imagen-reporte") || e.target.classList.contains("imagen-trabajo")) {
+            prepararImagenZoom();
+        }
+    });
 });
+
+function animateZoom() {
+    const imagenModal = document.getElementById("imagenModalAmpliada");
+    const zoomSpeed = 0.1;
+    scale += (targetScale - scale) * zoomSpeed;
+
+    imagenModal.style.transform = `scale(${scale})`;
+
+    if (Math.abs(targetScale - scale) > 0.01) {
+        requestAnimationFrame(animateZoom);
+    } else {
+        scale = targetScale;
+        imagenModal.style.transform = `scale(${scale})`;
+
+        if (scale === 1) {
+            imagenModal.style.transformOrigin = "center center";
+        }
+        animating = false;
+    }
+}
+
+

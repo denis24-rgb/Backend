@@ -19,6 +19,14 @@ import java.util.List;
 import java.util.UUID;
 import java.security.Principal; // ⬅️ importante
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 @RestController
 @RequestMapping("/api/evidencias")
 @CrossOrigin(origins = "*")
@@ -109,5 +117,23 @@ public class EvidenciaControlador {
                     .body("❌ Error al guardar el archivo: " + e.getMessage());
         }
     }
+    @GetMapping("/ver/{nombreArchivo:.+}")
+    public ResponseEntity<Resource> verEvidencia(@PathVariable String nombreArchivo) {
+        try {
+            Path ruta = Paths.get(UPLOAD_DIR + nombreArchivo);
+            Resource recurso = new UrlResource(ruta.toUri());
 
+            if (!recurso.exists() || !recurso.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + recurso.getFilename() + "\"")
+                    .contentType(MediaType.IMAGE_JPEG) // ⚠️ Puedes personalizar según el tipo de imagen
+                    .body(recurso);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }

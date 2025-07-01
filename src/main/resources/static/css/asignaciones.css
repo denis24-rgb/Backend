@@ -1,78 +1,90 @@
-/* 🎨 Estilo general */
 body {
-    font-family: 'Segoe UI', sans-serif;
     background-color: #f8f9fa;
 }
 
-/* 🟡🔵🔴 Tarjetas de filtros */
-.estado-btn {
+.tecnico-card {
     cursor: pointer;
-    border: none;
-    border-radius: 12px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
 }
 
-.estado-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
-
-/* 🗂 Tabla de reportes */
-.table th, .table td {
-    vertical-align: middle;
-    font-size: 15px;
-}
-
-.table thead {
+.tecnico-card:hover {
+    transform: scale(1.02);
     background-color: #e9ecef;
 }
 
-.table tbody tr:hover {
-    background-color: #f1f1f1;
+.tecnico-card.bg-primary {
+    transform: scale(1.02);
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
 }
 
-/* 🏷️ Badges de estado */
+.estado-btn {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.estado-btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.mapa-contenedor {
+    width: 100%;
+    height: 400px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
 .badge {
-    padding: 6px 10px;
-    font-size: 13px;
-    border-radius: 20px;
+    font-size: 0.9rem;
+    padding: 0.5em 0.8em;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.position-fixed.btn {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    border-radius: 50px;
+    padding: 0.8em 1.2em;
+}
+
+.text-muted {
+    font-size: 0.95rem;
+    color: #6c757d;
+}
+
+h4 {
     font-weight: 500;
 }
 
-/* 📋 Panel de reportes */
-.card-header.bg-primary {
-    background-color: #0d6efd !important;
+/* Opcional: mejora visual para cuando no hay técnico seleccionado */
+.text-center img {
+    max-width: 200px;
+    margin-top: 20px;
+    opacity: 0.6;
+}
+/* Fondo oscuro para todo el modal */
+.modal-content {
+    background-color: #1e1e1e;
+    color: white;
 }
 
-/* 🧑‍🔧 Panel de técnicos */
-.card-header.bg-secondary {
-    background-color: #6c757d !important;
+/* Contenedor para centrar y darle buen espacio al contenido del modal */
+.modal-body.evidencia-contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 20px;
 }
 
-.card .border.rounded {
-    background-color: #ffffff;
-    transition: box-shadow 0.2s, transform 0.2s;
-}
-
-.card .border.rounded:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-}
-
-.card .btn-outline-primary {
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-size: 13px;
-}
-
-/* 📱 Responsive mejoras */
-@media (max-width: 991.98px) {
-    .col-lg-8, .col-lg-4 {
-        margin-bottom: 20px;
-    }
-
-    .card .btn-outline-primary {
-        width: 100%;
-        margin-top: 8px;
-    }
+/* Imagen dentro del modal de evidencia */
+.modal-body.evidencia-contenedor img {
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }

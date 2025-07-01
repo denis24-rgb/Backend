@@ -77,6 +77,34 @@
                         <p><strong>Fecha:</strong> <span th:text="${#temporals.format(reporte.fechaReporte, 'dd/MM/yyyy')}">---</span></p>
                         <p><strong>Estado:</strong> <span class="estado-reporte" th:text="${reporte.estado}">---</span></p>
 
+                        <!-- Evidencias del Ciudadano -->
+                        <div th:if="${evidenciasPorReporte != null and evidenciasPorReporte[reporte.id] != null}">
+                            <div th:each="evidencia : ${evidenciasPorReporte[reporte.id]}">
+                                <h6 class="mt-2">Evidencia del Reporte:</h6>
+                                <button type="button" class="btn p-0 border-0 bg-transparent btn-evidencia" data-bs-toggle="modal" th:data-bs-target="'#modalEvidenciaCiudadano_' + ${evidencia.id}">
+                                    <img th:src="@{'/imagenes/' + ${evidencia.url}}"
+                                         class="img-thumbnail"
+                                         style="width: 100px; cursor: pointer;"
+                                         alt="Evidencia">
+                                </button>
+
+                                <!-- Modal para visualizar evidencia del ciudadano -->
+                                <div class="modal fade modal-evidencia" th:id="'modalEvidenciaCiudadano_' + ${evidencia.id}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-dark text-white">
+                                                <h5 class="modal-title">Evidencia del Reporte</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img th:src="@{'/imagenes/' + ${evidencia.url}}" class="img-fluid rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div th:if="${asignaciones != null and asignaciones[reporte.id] != null}">
                             <span class="badge bg-success">👷 Técnico: <span th:text="${asignaciones[reporte.id]?.tecnico?.nombre}">Nombre Técnico</span></span>
                         </div>
@@ -94,8 +122,8 @@
                             </form>
                         </div>
 
-                        <div th:if="${reporte.estado == 'resuelto' and asignaciones != null and asignaciones[reporte.id]?.imagenTrabajo != null}">
-                            <h6 class="mt-2">📷 Evidencia de Trabajo:</h6>
+                        <div th:if="${(reporte.estado == 'resuelto' or reporte.estado == 'cerrado') and asignaciones != null and asignaciones[reporte.id]?.imagenTrabajo != null}">
+                        <h6 class="mt-2">Evidencia de Trabajo:</h6>
 
                             <button type="button" class="btn p-0 border-0 bg-transparent btn-evidencia" data-bs-toggle="modal" th:data-bs-target="'#modalEvidencia_' + ${reporte.id}">
                                 <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}"
@@ -106,20 +134,21 @@
                         </div>
 
 
-                        <div class="modal fade" th:id="'modalEvidencia_' + ${reporte.id}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-dark text-white">
-                                            <h5 class="modal-title">📷 Evidencia Final del Técnico</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}" class="img-fluid rounded">
-                                        </div>
+                        <!-- Modal para visualizar evidencia final del técnico -->
+                        <div class="modal fade modal-evidencia" th:id="'modalEvidencia_' + ${reporte.id}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5 class="modal-title">Evidencia Final del Técnico</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}" class="img-fluid rounded">
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
                         <div th:if="${reporte.estado == 'resuelto'}" sec:authorize="hasAnyRole('ADMINISTRADOR','SUPERADMIN')">
                             <form th:action="@{/reportes/{id}/cerrar(id=${reporte.id})}" method="post">
@@ -164,6 +193,7 @@
     </div>
 </div>
 
+<!-- Modal Mapa SIN CLASE, NO SE TOCA -->
 <div class="modal fade" id="modalMapa" tabindex="-1" aria-labelledby="modalMapaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
