@@ -2,10 +2,7 @@ package com.reporte_ciudadano.backend.controlador;
 
 import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
 import com.reporte_ciudadano.backend.modelo.Evidencia;
-import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
-import com.reporte_ciudadano.backend.servicio.EvidenciaServicio;
-import com.reporte_ciudadano.backend.servicio.ReporteServicio;
-import com.reporte_ciudadano.backend.servicio.UsuarioInstitucionalServicio;
+import com.reporte_ciudadano.backend.servicio.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +17,8 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/reportes")
 public class ReporteWebControlador {
+    @Autowired
+    private TipoReporteServicio tipoReporteServicio;
 
     @Autowired
     private ReporteServicio reporteServicio;
@@ -34,6 +33,7 @@ public class ReporteWebControlador {
     @GetMapping
     public String verReportes(Model model, Principal principal) {
         String correo = principal.getName();
+
         var usuario = usuarioServicio.obtenerPorCorreo(correo)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
@@ -66,11 +66,9 @@ public class ReporteWebControlador {
         model.addAttribute("evidenciasPorReporte", evidenciasPorReporte);
         model.addAttribute("estados", List.of("recibido", "en proceso", "resuelto", "cerrado"));
 
-        var tipos = reportes.stream()
-                .map(r -> r.getTipoReporte().getNombre())
-                .distinct()
-                .toList();
+        var tipos = tipoReporteServicio.listarTodos();
         model.addAttribute("tipos", tipos);
+
 
         return "reportes";
     }
@@ -109,4 +107,23 @@ public class ReporteWebControlador {
         }
         return "redirect:/reportes";
     }
+    @PostMapping("/cambiar-tipo")
+    public String cambiarTipoReporte(@RequestParam Long reporteId,
+                                     @RequestParam Long tipoReporteId,
+                                     Principal principal,
+                                     RedirectAttributes redirect) {
+        try {
+            String correo = principal.getName();
+            var usuario = usuarioServicio.obtenerPorCorreo(correo)
+                    .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+            reporteServicio.cambiarTipo(reporteId, tipoReporteId, usuario);
+
+            redirect.addFlashAttribute("mensajeExito", "Tipo de reporte actualizado correctamente.");
+        } catch (Exception e) {
+            redirect.addFlashAttribute("mensajeError", "Error al actualizar el tipo de reporte: " + e.getMessage());
+        }
+        return "redirect:/reportes";
+    }
+
 }
