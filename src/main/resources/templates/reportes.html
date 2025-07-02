@@ -34,7 +34,7 @@
                         <label for="filtroTipo" class="form-label">📋 Tipo de Reporte</label>
                         <select id="filtroTipo" class="form-select">
                             <option value="">Todos</option>
-                            <option th:each="tipo : ${tipos}" th:value="${tipo}" th:text="${tipo}"></option>
+                            <option th:each="tipo : ${tipos}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -62,7 +62,13 @@
             <div class="col-md-6 col-lg-4 mb-4" th:each="reporte : ${reportes}">
                 <div class="card tarjeta-reporte h-100 shadow-sm border-start border-4 border-primary">
                     <div class="card-body">
-                        <h5 class="card-title text-primary fw-bold" th:text="${reporte.tipoReporte?.nombre}">Tipo</h5>
+                        <h5 class="card-title text-primary fw-bold d-flex justify-content-between align-items-center">
+                            <span th:text="${reporte.tipoReporte?.nombre}">Tipo</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                    data-bs-toggle="modal" th:data-bs-target="'#modalCambiarTipo_' + ${reporte.id}">
+                                ✏️
+                            </button>
+                        </h5>
                         <p><strong>Descripción:</strong> <span th:text="${reporte.descripcion}">---</span></p>
                         <p>
                             <strong>Ubicación:</strong>
@@ -131,6 +137,29 @@
                                      style="width: 100px; cursor: pointer;"
                                      alt="Evidencia del Técnico">
                             </button>
+                        </div>
+                        <div class="modal fade" th:id="'modalCambiarTipo_' + ${reporte.id}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Cambiar Tipo de Reporte</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form th:action="@{/reportes/cambiar-tipo}" method="post">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="reporteId" th:value="${reporte.id}" />
+                                            <label th:for="'nuevoTipo_' + ${reporte.id}" class="form-label">Seleccione el tipo correcto:</label>
+                                            <select th:id="'nuevoTipo_' + ${reporte.id}" name="tipoReporteId" class="form-select" required>
+                                                <option th:each="tipo : ${tipos}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
 
 

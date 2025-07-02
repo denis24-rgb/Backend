@@ -44,6 +44,8 @@ public class ReporteServicio {
             "recibido", "en proceso", "resuelto", "cerrado");
     @Autowired
     private AsignacionTecnicoRepositorio asignacionTecnicoRepositorio;
+    @Autowired
+    private HistorialReporteRepositorio historialReporteRepositorio;
 
     public ReporteServicio(ReporteRepositorio reporteRepositorio,
             HistorialEstadoRepositorio historialEstadoRepositorio) {
@@ -280,10 +282,32 @@ public class ReporteServicio {
 
         return true;
     }
+    public void cambiarTipo(Long reporteId, Long tipoReporteId, UsuarioInstitucional usuario) {
+        var reporte = reporteRepositorio.findById(reporteId)
+                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+
+        var nuevoTipo = tipoReporteRepositorio.findById(tipoReporteId)
+                .orElseThrow(() -> new RuntimeException("Tipo de reporte no válido"));
+
+        String tipoAnterior = reporte.getTipoReporte().getNombre();
+
+        reporte.setTipoReporte(nuevoTipo);
+        reporteRepositorio.save(reporte);
+
+        // Registrar en historial
+        var historial = new HistorialReporte();
+        historial.setDetalle("Tipo de reporte cambiado de " + tipoAnterior + " a " + nuevoTipo.getNombre() + ".");
+        historial.setReporte(reporte);
+        historial.setUsuario(usuario);
+        historial.setFechaHora(LocalDateTime.now());
+
+        historialReporteRepositorio.save(historial);
+    }
 
 
 
-    
+
+
     public int contarTotalReportesPorInstitucion(Long institucionId) {
         return reporteRepositorio.contarPorInstitucion(institucionId);
     }
