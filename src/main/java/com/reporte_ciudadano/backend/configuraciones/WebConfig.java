@@ -15,7 +15,9 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResourceLocations(
                         "classpath:/static/imagenes/",
                         "file:/opt/reporte_ciudadano/imagenes-trabajos/",
-                        "file:/opt/reporte_ciudadano/evidencias/"
+                        "file:/opt/reporte_ciudadano/evidencias/",
+                        "file:/opt/reporte_ciudadano/iconos-tipo-reporte/",
+                        "file:/opt/reporte_ciudadano/avisos-comunitarios/"
                 );
     }
 }
