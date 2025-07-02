@@ -109,7 +109,7 @@ public class TecnicoControlador {
 
             if (imagenTrabajo != null && !imagenTrabajo.isEmpty()) {
                 String nombreUnico = UUID.randomUUID() + "_" + imagenTrabajo.getOriginalFilename();
-                String rutaCarpeta = "C:/imagenes-trabajos/"; // O la carpeta que uses en tu servidor
+                String rutaCarpeta = "/opt/reporte_ciudadano/imagenes-trabajos/";// O la carpeta que uses en tu servidor
                 imagenTrabajo.transferTo(new java.io.File(rutaCarpeta + nombreUnico));
                 nombreImagen = nombreUnico;
             }
