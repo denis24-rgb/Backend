@@ -252,5 +252,31 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+let idFormularioCambioTipo = "";
+
+function confirmarCambioTipo(boton) {
+    const reporteId = boton.getAttribute("data-reporte-id");
+    const tipoActual = boton.getAttribute("data-tipo-actual");
+    const idSelectTipo = boton.getAttribute("data-tipo-select-id");
+
+    const select = document.getElementById(idSelectTipo);
+    const tipoNuevo = select.options[select.selectedIndex].text;
+
+    // Mostrar tipos en el modal
+    document.getElementById('tipoActual').innerText = tipoActual;
+    document.getElementById('tipoNuevo').innerText = tipoNuevo;
+
+    // Guardar el id del formulario
+    idFormularioCambioTipo = "formCambiarTipo_" + reporteId;
+
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmarCambioTipo'));
+    modal.show();
+}
+
+document.getElementById('btnConfirmarCambioTipo').addEventListener('click', () => {
+    document.getElementById(idFormularioCambioTipo).submit();
+});
+
 
 

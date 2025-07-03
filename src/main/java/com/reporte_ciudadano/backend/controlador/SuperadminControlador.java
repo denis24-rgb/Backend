@@ -190,5 +190,12 @@ public class SuperadminControlador {
         model.addAttribute("usuarios", usuarioServicio.listarTodos());
         return "usuarios"; // O "panel/usuarios" si lo pones en subcarpeta
     }
+    @GetMapping("/reportes")
+    public String verReportes(Model model) {
+        List<Reporte> reportes = reporteServicio.listarTodos();
+        model.addAttribute("reportes", reportes);
+        return "reportes";
+    }
+
 
 }
