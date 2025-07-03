@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 @CrossOrigin(origins = "*")
 public class TrabajoControlador {
 
-    private static final String CARPETA_TRABAJOS = "C:/imagenes-trabajos/";
+    private static final String CARPETA_TRABAJOS = "/opt/reporte_ciudadano/imagenes-trabajos/";
 
     @GetMapping("/ver/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verImagenTrabajo(@PathVariable String nombreArchivo) {

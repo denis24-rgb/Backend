@@ -1,46 +1,102 @@
 body {
-    background-color: #1c1c2e;
-    color: #f1f1f1;
-    font-family: 'Segoe UI', sans-serif;
+    background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    min-height: 100vh;
 }
 
 .container {
-    max-width: 1280px;
-    margin: 60px auto 40px;
-    padding: 30px;
-    background-color: #2a2a40;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 208, 255, 0.1);
+    max-width: 90%;
+    padding: 10px;
 }
 
-h2 {
-    color: #00d0ff;
-    font-weight: bold;
-    margin-bottom: 30px;
-}
-
-/* Botón Volver arriba */
-.btn-outline-primary {
-    color: #00d0ff;
-    border-color: #00d0ff;
-    transition: 0.3s ease;
-    font-weight: bold;
-    background-color: transparent;
-}
-
-.btn-outline-primary:hover {
-    background-color: #00d0ff;
-    color: #1c1c2e;
-    border-color: #00d0ff;
-}
-
-/* Canvas con fondo blanco y bordes suaves */
-canvas {
+.card {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+    border: none;
+    padding: 10px;
     background-color: #fff;
-    border-radius: 10px;
-    padding: 20px;
+    transition: transform 0.2s;
+    height: 400px; /* ✅ Altura fija para las tarjetas */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+h6 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    text-align: center;
+    background: linear-gradient(90deg, #007bff 0%, #17a2b8 100%);
+    padding: 6px;
+    border-radius: 4px;
     width: 100%;
-    max-height: 400px;
+}
+
+/* 🎯 Gráfico de Pastel (Estados) */
+#pieChartEstados {
+    width: 350px;
+    height: 350px;
+    margin: 0 auto;
+}
+
+/* 🎯 Gráfico por Tipo */
+#barChartTipos {
+    width: 100%;
+    height: 276px;
+}
+
+/* 🎯 Gráfico de Evolución */
+#graficoEvolucion {
+    width: 100%;
+    height: 200px;
+}
+
+#selectorEvolucion,
+#fechaInicio,
+#fechaFin {
+    font-size: 0.9rem;
+    padding: 5px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+/* 🎯 Responsive para pantallas pequeñas */
+@media (max-width: 768px) {
+    .row > .col-md-8,
+    .row > .col-md-4 {
+        flex: 100%;
+        max-width: 100%;
+    }
+
+    .card {
+        height: auto;
+    }
+
+    #pieChartEstados {
+        width: 220px;
+        height: 220px;
+    }
+
+    #barChartTipos {
+        height: 180px;
+    }
+
+    #graficoEvolucion {
+        height: 180px;
+    }
+}
+html, body {
+    overflow-x: hidden; /* Evita el scroll horizontal innecesario */
+}
+
+.container {
+    max-width: 100%;
+    overflow-x: hidden; /* Evita que el contenedor se desborde horizontalmente */
 }

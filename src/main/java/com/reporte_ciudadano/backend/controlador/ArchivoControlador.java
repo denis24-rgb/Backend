@@ -13,7 +13,7 @@ import java.nio.file.*;
 @CrossOrigin(origins = "*") // Importante para que Flutter acceda
 public class ArchivoControlador {
 
-    private final Path rutaEvidencias = Paths.get("C:/evidencias"); // tu carpeta
+    private final Path rutaEvidencias = Paths.get("/opt/reporte_ciudadano/evidencias"); // Ruta VPS
 
     @GetMapping("/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verArchivo(@PathVariable String nombreArchivo) {

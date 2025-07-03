@@ -35,7 +35,7 @@ public class AvisoComunitarioControlador {
     @Autowired
     private NotificacionRepositorio notificacionRepositorio;
 
-    private final String rutaImagenes = "src/main/resources/static/imagenes/avisos/";
+    private final String rutaImagenes = "/opt/reporte_ciudadano/avisos-comunitarios/";
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crearAviso(

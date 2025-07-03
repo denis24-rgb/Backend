@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestión de Contactos de Emergencia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/contactos.css}">
+    <style>
+        #mapa {
+            height: 100%;
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+
+        <!-- Columna izquierda: Formulario y Mapa -->
+        <div class="col-md-8 d-flex flex-column p-3 bg-light">
+
+            <!-- Formulario -->
+            <div class="card shadow mb-3">
+                <div class="card-body">
+                    <h5 class="card-title" id="tituloFormulario">Agregar Contacto</h5>
+                    <form th:action="@{/superadmin/contactos/guardar}" method="post" id="formContacto">
+                        <input type="hidden" name="id" id="idContacto">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre</label>
+                                <input type="text" name="nombreContacto" class="form-control" id="nombreContacto" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Tipo</label>
+                                <select name="tipoContacto" class="form-select" id="tipoContacto" required>
+                                    <option value="">Selecciona...</option>
+                                    <option value="Contacto de Emergencia">Emergencia</option>
+                                    <option value="Contacto de Policía">Policía</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono</label>
+                                <input type="text" name="telefono" class="form-control" id="telefono" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Dirección</label>
+                                <input type="text" name="direccion" class="form-control" id="direccion">
+                            </div>
+                        </div>
+                        <input type="hidden" name="lat" id="lat">
+                        <input type="hidden" name="lng" id="lng">
+                        <div class="mt-3 d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar Contacto</button>
+                            <button type="button" class="btn btn-secondary" id="btnCancelar" style="display: none;">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Mapa ocupa todo el espacio disponible -->
+            <div class="flex-grow-1">
+                <div id="mapa" class="w-100 h-100"></div>
+            </div>
+
+        </div>
+
+        <!-- Columna derecha: Lista de Contactos -->
+        <div class="col-md-4 p-3 bg-secondary text-white d-flex flex-column h-100">
+            <h5>Contactos Registrados</h5>
+            <div class="scroll-contactos mt-2 flex-grow-1">
+
+                <div th:each="contacto : ${contactos}" class="card contacto-card mb-2"
+                     th:attr="data-id=${contacto.id}, data-lat=${contacto.lat}, data-lng=${contacto.lng}, data-nombre=${contacto.nombreContacto}, data-tipo=${contacto.tipoContacto}, data-telefono=${contacto.telefono}, data-direccion=${contacto.direccion}">
+                    <h6 th:text="${contacto.nombreContacto}"></h6>
+                    <p class="mb-1"><strong>Tipo:</strong> <span th:text="${contacto.tipoContacto}"></span></p>
+                    <p class="mb-1"><strong>Tel:</strong> <span th:text="${contacto.telefono}"></span></p>
+                    <p class="mb-1"><strong>Dir:</strong> <span th:text="${contacto.direccion}"></span></p>
+                    <div class="d-flex gap-2 mt-1">
+                        <button type="button" class="btn btn-sm btn-outline-success w-100"
+                                th:attr="data-lat=${contacto.lat}, data-lng=${contacto.lng}"
+                                onclick="verUbicacion(this)">Ver en Mapa</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                onclick="editarContacto(this.parentElement.parentElement)">Editar</button>
+                        <a th:href="@{'/superadmin/contactos/eliminar/' + ${contacto.id}}"
+                           class="btn btn-sm btn-danger w-100">Eliminar</a>
+                    </div>
+                </div>
+
+                <div th:if="${contactos.size() == 0}" class="text-center text-white mt-3">
+                    No hay contactos registrados.
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script th:src="@{/js/contactos.js}"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1FjZtRLFk0h9dLAqUopMOi4FJn8t57s&callback=initMap"></script>
+
+<!-- Toast de error -->
+<div id="toastError" class="toast position-fixed bottom-0 start-0 m-3 text-bg-danger" role="alert" style="display: none;">
+    <div class="d-flex">
+        <div class="toast-body">
+            Debes seleccionar una ubicación en el mapa antes de guardar.
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

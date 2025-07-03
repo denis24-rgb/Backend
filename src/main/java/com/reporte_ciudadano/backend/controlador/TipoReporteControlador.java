@@ -50,6 +50,12 @@ public class TipoReporteControlador {
     @Autowired
     private InstitucionTipoReporteRepositorio institucionTipoReporteRepositorio;
 
+    private static final String RUTA_ICONOS = "/opt/reporte_ciudadano/iconos-tipo-reporte";
+
+    public TipoReporteControlador(TipoReporteServicio servicio) {
+        this.servicio = servicio;
+    }
+
     @GetMapping
     public String mostrarVista(Model model) {
 
@@ -67,11 +73,7 @@ public class TipoReporteControlador {
             RedirectAttributes redirect) throws IOException {
         if (!archivo.isEmpty() && archivo.getOriginalFilename().endsWith(".png")) {
             String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
-
-            // 🔧 Esta es la línea correcta que reemplaza las dos anteriores
-            Path rutaFinal = Paths.get("src/main/resources/static/imagenes", nombreArchivo);
-
-            // 💾 Guardar el archivo en la carpeta visible del proyecto
+            Path rutaFinal = Paths.get(RUTA_ICONOS, nombreArchivo);
             Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
 
             // Guardar en base de datos
@@ -103,10 +105,7 @@ public class TipoReporteControlador {
             TipoReporte tipo = tipoRepo.findById(id).orElse(null);
 
             if (tipo != null) {
-                // Ruta del ícono a eliminar
-                Path rutaIcono = Paths.get("src/main/resources/static/imagenes", tipo.getIcono());
-
-                // Eliminar archivo si existe
+                Path rutaIcono = Paths.get(RUTA_ICONOS, tipo.getIcono());
                 Files.deleteIfExists(rutaIcono);
             }
             // Eliminar el registro de la base de datos
@@ -133,18 +132,18 @@ public class TipoReporteControlador {
             if (iconoFile != null && !iconoFile.isEmpty()) {
                 // Eliminar el anterior
                 String iconoAnterior = tipo.getIcono();
-                Path rutaAnterior = Paths.get("src/main/resources/static/imagenes", iconoAnterior);
+                Path rutaAnterior = Paths.get(RUTA_ICONOS, iconoAnterior);
                 Files.deleteIfExists(rutaAnterior);
 
                 // Guardar el nuevo ícono
                 String nombreOriginal = iconoFile.getOriginalFilename();
-                Path rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreOriginal);
+                Path rutaDestino = Paths.get(RUTA_ICONOS, nombreOriginal);
 
                 // Verificar si ya existe un archivo con ese nombre
                 if (Files.exists(rutaDestino)) {
                     // Si existe, se genera un nombre único para no sobrescribir
                     String nombreUnico = System.currentTimeMillis() + "_" + nombreOriginal;
-                    rutaDestino = Paths.get("src/main/resources/static/imagenes", nombreUnico);
+                    rutaDestino = Paths.get(RUTA_ICONOS, nombreUnico);
                     tipo.setIcono(nombreUnico);
                 } else {
                     tipo.setIcono(nombreOriginal);
@@ -171,10 +170,6 @@ public class TipoReporteControlador {
         }
 
         return "redirect:/panel/superadmin/tipos-reportes";
-    }
-
-    public TipoReporteControlador(TipoReporteServicio servicio) {
-        this.servicio = servicio;
     }
 
     @GetMapping("/listar")

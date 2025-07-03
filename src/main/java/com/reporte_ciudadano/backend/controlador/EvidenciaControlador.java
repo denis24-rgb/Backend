@@ -44,6 +44,8 @@ public class EvidenciaControlador {
         this.servicio = servicio;
     }
 
+    private static final String UPLOAD_DIR = "/opt/reporte_ciudadano/evidencias/";
+
     @GetMapping
     public List<Evidencia> listar() {
         return servicio.listarTodas();
@@ -63,8 +65,6 @@ public class EvidenciaControlador {
     public void eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
     }
-
-    private static final String UPLOAD_DIR = "C:/evidencias/";
 
     @PostMapping("/subir")
     public ResponseEntity<?> subirEvidencia(
