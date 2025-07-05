@@ -85,15 +85,15 @@ public class UsuarioControlador {
 
         Usuario usuario = usuarioServicio.completarDatos(correo, nombre, telefono, direccion);
 
-        // ✅ Generar JWT
+        //  Generar JWT
         UsuarioAppDetalles userDetails = new UsuarioAppDetalles(usuario);
         String jwt = jwtUtil.generarToken(userDetails);
 
-        // ✅ Guardar el token en el campo 'tokenSesion'
+        //  Guardar el token en el campo 'tokenSesion'
         usuario.setTokenSesion(jwt);
         usuarioServicio.guardarUsuario(usuario);
 
-        // ✅ Devolver token y datos a la app
+        //  Devolver token y datos a la app
         Map<String, Object> response = new HashMap<>();
         response.put("id", usuario.getId());
         response.put("correo", usuario.getCorreo());
@@ -144,7 +144,7 @@ public class UsuarioControlador {
         // Enviar correo de verificación
         emailService.enviarCorreoLoginNuevoDispositivo(correo, nuevoToken);
 
-        // ✅ Aquí devolvemos los datos necesarios al frontend
+        //  Aquí devolvemos los datos necesarios al frontend
         return ResponseEntity.ok(Map.of(
                 "id", usuario.getId(),
                 "correo", usuario.getCorreo()));
