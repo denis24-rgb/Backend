@@ -155,8 +155,6 @@ function mostrarDetalleReporte(reporte) {
     }
 
     modalBody.innerHTML = contenido;
-    const modal = new bootstrap.Modal(document.getElementById('modalDetalleReporte'));
-    modal.show();
 }
 
 function mostrarSelectorTecnico(reporteId) {
@@ -277,3 +275,33 @@ function guardarFiltrosEnLocalStorage() {
     localStorage.setItem("filtrosEstadoAdmin", JSON.stringify(estados));
 }
 
+let infoWindow;
+
+function mostrarDetalleReporte(reporte) {
+    if (infoWindow) {
+        infoWindow.close();
+    }
+
+    const contenido = `
+        <div style="min-width: 200px;">
+            <h6><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || "No especificado"}</h6>
+            <h6><strong>Descripción:</strong> ${reporte.descripcion || "Sin descripción"}</h6>
+            <h6><strong>Estado:</strong> ${reporte.estado?.nombre || "Sin estado"}</h6>
+            <h6><strong>Fecha:</strong> ${reporte.fechaReporte || "Sin fecha"}</h6>
+            ${reporte.tecnico
+        ? `<div class="mt-2 text-success"><strong><i class="bi bi-person-check-fill me-1"></i>Técnico:</strong> ${reporte.tecnico.nombre}</div>`
+        : `<div class="mt-2 text-warning"><em>Sin técnico asignado</em></div>`
+    }
+        </div>
+    `;
+
+    const partes = reporte.ubicacion.split(",").map(p => parseFloat(p.trim()));
+    const posicion = { lat: partes[0], lng: partes[1] };
+
+    infoWindow = new google.maps.InfoWindow({
+        content: contenido,
+        position: posicion
+    });
+
+    infoWindow.open(mapa);
+}

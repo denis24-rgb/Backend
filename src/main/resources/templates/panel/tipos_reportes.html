@@ -237,6 +237,23 @@
         }, 3000);
     });
 </script>
+<script>
+    const selectCategoria = document.getElementById("categoria");
+    const divInstitucion = document.getElementById("institucion").closest(".col-md-4");
+
+    selectCategoria.addEventListener("change", () => {
+        const categoriaTexto = selectCategoria.options[selectCategoria.selectedIndex].text.toLowerCase();
+
+        if (categoriaTexto.includes("aviso")) {
+            divInstitucion.style.display = "none";
+            document.getElementById("institucion").required = false;
+            document.getElementById("institucion").value = ""; // Limpiar valor
+        } else {
+            divInstitucion.style.display = "block";
+            document.getElementById("institucion").required = true;
+        }
+    });
+</script>
 
 </body>
 </html>
