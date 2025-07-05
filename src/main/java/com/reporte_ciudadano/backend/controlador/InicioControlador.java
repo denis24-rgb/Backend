@@ -9,7 +9,6 @@ import com.reporte_ciudadano.backend.modelo.Institucion;
 import com.reporte_ciudadano.backend.modelo.Reporte;
 import com.reporte_ciudadano.backend.modelo.UsuarioInstitucional;
 import com.reporte_ciudadano.backend.modelo.RolInstitucional;
-import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
 import com.reporte_ciudadano.backend.servicio.UsuarioInstitucionalServicio;
 import jakarta.servlet.http.HttpSession;
@@ -31,8 +30,6 @@ public class InicioControlador {
 
     @Autowired
     private ReporteServicio reporteServicio;
-    @Autowired
-    private AsignacionTecnicoServicio asignacionTecnicoServicio;
 
     @GetMapping("/")
     public String redirigirInicio() {
@@ -55,26 +52,15 @@ public class InicioControlador {
             reporteMap.put("fechaReporte", r.getFechaReporte() != null ? r.getFechaReporte().toString() : null);
             reporteMap.put("hora", r.getHora() != null ? r.getHora().toString() : null);
             reporteMap.put("ubicacion", r.getUbicacion());
-
             if (r.getInstitucion() != null) {
                 reporteMap.put("institucion", r.getInstitucion().getNombre());
             }
-
             if (r.getTipoReporte() != null) {
                 Map<String, Object> tipo = new HashMap<>();
                 tipo.put("nombre", r.getTipoReporte().getNombre());
                 tipo.put("icono", r.getTipoReporte().getIcono());
                 reporteMap.put("tipoReporte", tipo);
             }
-
-            // Técnico asignado
-            asignacionTecnicoServicio.buscarPorReporteId(r.getId()).ifPresent(asignacion -> {
-                Map<String, Object> tecnicoMap = new HashMap<>();
-                tecnicoMap.put("id", asignacion.getTecnico().getId());
-                tecnicoMap.put("nombre", asignacion.getTecnico().getNombre());
-                reporteMap.put("tecnico", tecnicoMap);
-            });
-
             return reporteMap;
         }).toList();
 
@@ -102,7 +88,6 @@ public class InicioControlador {
 
         return "inicio-admin";
     }
-
 
 //    @GetMapping("/inicio-operador")
 //    public String vistaOperador(Model model, Principal principal) throws JsonProcessingException {

@@ -4,9 +4,7 @@ import com.reporte_ciudadano.backend.modelo.Notificacion;
 import com.reporte_ciudadano.backend.modelo.Reporte;
 import com.reporte_ciudadano.backend.modelo.Usuario;
 import com.reporte_ciudadano.backend.repositorio.NotificacionRepositorio;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,8 +13,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class NotificacionServicio {
-    @Autowired
-    private NotificacionRepositorio notificacionRepositorio;
+
+    private final NotificacionRepositorio notificacionRepositorio;
     private final NotificacionPushServicio notificacionPushServicio;
 
     public void crear(Usuario usuario, String mensaje) {
@@ -39,10 +37,7 @@ public class NotificacionServicio {
                     mensaje);
         }
     }
-    @Transactional
-    public void eliminarPorReporteId(Long reporteId) {
-        notificacionRepositorio.deleteByReporteId(reporteId);
-    }
+
     public List<Notificacion> obtenerPorUsuario(Usuario usuario) {
         return notificacionRepositorio.findByUsuarioOrderByFechaDesc(usuario);
     }

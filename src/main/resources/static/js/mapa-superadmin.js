@@ -20,6 +20,7 @@ function initMap() {
     const filtrosEstado = new Set();
 
     const tiposUnicos = [...new Set(reportes.map(r => r.tipoReporte?.nombre).filter(Boolean))];
+    const estadosUnicos = [...new Set(reportes.map(r => r.estado?.nombre).filter(Boolean))];
 
     const contenedorTipos = document.getElementById("contenedorFiltros");
     const contenedorEstados = document.getElementById("contenedorEstados");
@@ -54,14 +55,11 @@ function initMap() {
     };
     contenedorTipos.appendChild(btnTodosTipos);
 
-    // 🟩 Crear botones de estados fijos
-    const estadosFijos = ["recibido", "en proceso", "resuelto", "cerrado"];
-
-    estadosFijos.forEach(estado => {
+    // 🟩 Crear botones de estados de reporte
+    estadosUnicos.forEach(estado => {
         const btn = document.createElement("button");
         btn.className = "btn btn-outline-success btn-sm filtro-btn-estado";
-        btn.textContent = estado.charAt(0).toUpperCase() + estado.slice(1);
-        btn.setAttribute("data-valor", estado);
+        btn.textContent = estado;
         btn.onclick = () => {
             if (filtrosEstado.has(estado)) {
                 filtrosEstado.delete(estado);
@@ -113,8 +111,11 @@ function initMap() {
                     const delay = 120;
 
                     let nivelActual = mapa.getZoom();
+
+                    // Centrar primero
                     mapa.panTo(marcador.getPosition());
 
+                    // Hacer zoom poco a poco si es necesario
                     function zoomProgresivo() {
                         if (nivelActual < objetivoZoom) {
                             nivelActual += incremento;
@@ -127,23 +128,19 @@ function initMap() {
                         zoomProgresivo();
                     }
 
-                    // Crear InfoWindow
-                    const contenido = `
-                        <div style="max-width: 250px; color: black;">
-                            <p><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || 'N/A'}</p>
-                            <p><strong>Descripción:</strong> ${reporte.descripcion || 'Sin descripción'}</p>
-                            <p><strong>Institución:</strong> ${reporte.institucion || 'Sin asignar'}</p>
-                            <p><strong>Estado:</strong> ${reporte.estado || 'Desconocido'}</p>
-                            <p><strong>Fecha:</strong> ${reporte.fechaReporte?.substring(0, 10) || 'No registrada'}</p>
-                        </div>
-                    `;
-
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: contenido
-                    });
-
-                    infoWindow.open(mapa, marcador);
+                    //  Aquí tu modal no se afecta, se mantiene igual
+                    const html = `
+        <p><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || 'N/A'}</p>
+        <p><strong>Descripción:</strong> ${reporte.descripcion || 'Sin descripción'}</p>
+        <p><strong>Institución:</strong> ${reporte.institucion?.nombre || 'Sin asignar'}</p>
+        <p><strong>Estado:</strong> ${reporte.estado?.nombre || 'Desconocido'}</p>
+        <p><strong>Ubicación:</strong> ${reporte.ubicacion || 'No registrada'}</p>
+        <p><strong>Fecha:</strong> ${reporte.fechaReporte?.substring(0, 10) || 'No registrada'}</p>
+    `;
+                    document.getElementById("contenidoModal").innerHTML = html;
+                    new bootstrap.Modal(document.getElementById("modalDetalleReporte")).show();
                 });
+
 
                 marcadores.push(marcador);
             }
@@ -161,7 +158,7 @@ function initMap() {
 
         marcadores.forEach(m => {
             const tipo = m.reporte?.tipoReporte?.nombre;
-            const estado = m.reporte?.estado;
+            const estado = m.reporte?.estado?.nombre;
 
             const visibleTipo = filtrosTipo.size === 0 || filtrosTipo.has(tipo);
             const visibleEstado = filtrosEstado.size === 0 || filtrosEstado.has(estado);
@@ -183,8 +180,8 @@ function initMap() {
         });
 
         document.querySelectorAll(".filtro-btn-estado").forEach(btn => {
-            const valor = btn.getAttribute("data-valor");
-            btn.classList.toggle("active", filtrosEstado.has(valor) || (btn.textContent.trim().toLowerCase() === "mostrar todos" && filtrosEstado.size === 0));
+            const texto = btn.textContent.trim();
+            btn.classList.toggle("active", filtrosEstado.has(texto) || (texto === "Mostrar Todos" && filtrosEstado.size === 0));
         });
     }
 
@@ -209,13 +206,9 @@ function initMap() {
 }
 
 // 🎛️ Mostrar/Ocultar panel filtros con efecto
-window.initMap = initMap;
 function toggleFiltros() {
     const panel = document.getElementById("panelFiltros");
-
-    if (panel.style.display === "none" || panel.style.display === "") {
-        panel.style.display = "block";
-    } else {
-        panel.style.display = "none";
-    }
+    panel.classList.toggle("show");
 }
+
+window.initMap = initMap;
