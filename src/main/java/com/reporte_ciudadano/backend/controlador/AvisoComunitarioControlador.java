@@ -45,7 +45,7 @@ public class AvisoComunitarioControlador {
             @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
 
         try {
-            String correo = principal.getName(); // JWT ya validado
+            String correo = principal.getName();
             System.out.println("📨 Correo extraído del token: " + correo);
 
             Usuario usuario = usuarioRepo.findByCorreo(correo).orElse(null);

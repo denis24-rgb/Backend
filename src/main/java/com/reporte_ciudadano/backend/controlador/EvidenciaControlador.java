@@ -17,13 +17,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.security.Principal; // ⬅️ importante
+import java.security.Principal;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -105,7 +104,7 @@ public class EvidenciaControlador {
             Evidencia evidencia = new Evidencia();
             evidencia.setReporte(reporte);
             evidencia.setTipoEvidencia(tipo);
-            evidencia.setUrl(nombreArchivo); // Guardar solo el nombre del archivo
+            evidencia.setUrl(nombreArchivo);
 
             evidenciaRepositorio.save(evidencia);
 
@@ -117,6 +116,7 @@ public class EvidenciaControlador {
                     .body("❌ Error al guardar el archivo: " + e.getMessage());
         }
     }
+
     @GetMapping("/ver/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verEvidencia(@PathVariable String nombreArchivo) {
         try {
@@ -129,7 +129,7 @@ public class EvidenciaControlador {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + recurso.getFilename() + "\"")
-                    .contentType(MediaType.IMAGE_JPEG) // ⚠️ Puedes personalizar según el tipo de imagen
+                    .contentType(MediaType.IMAGE_JPEG) // Puedes personalizar según el tipo real de archivo
                     .body(recurso);
 
         } catch (Exception e) {
