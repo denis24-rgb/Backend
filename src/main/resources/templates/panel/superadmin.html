@@ -71,35 +71,27 @@
                     </div>
                 </div>
             </div>
+
+            <div class="d-flex justify-content-start align-items-center mb-2">
+                <button id="btnToggleFiltros" class="btn btn-secondary btn-sm me-2" onclick="toggleFiltros()">🔽 Filtros</button>
+            </div>
+
+            <!-- CONTENEDOR FILTROS -->
+            <div class="mb-3 collapse show" id="panelFiltros">
+                <label class="form-label fw-bold">Filtrar por tipo de reporte:</label>
+                <div id="contenedorFiltros" class="d-flex flex-wrap gap-2 mb-3"></div>
+
+                <label class="form-label fw-bold">Filtrar por estado del reporte:</label>
+                <div id="contenedorEstados" class="d-flex flex-wrap gap-2"></div>
+            </div>
             <!-- Mapa -->
             <div class="card bg-secondary shadow-sm rounded">
                 <div class="card-header text-white">
                     <i class="bi bi-geo-alt-fill me-2"></i>Mapa de Reportes
                 </div>
-
                 <div class="card-body">
-                    <!-- Contenedor relativo para que los elementos flotantes se ubiquen bien -->
-                    <div class="position-relative" style="height: 400px; width: 100%; background-color: #2d2d2d;" id="mapContainer">
-
-                        <div id="map" style="height: 100%; width: 100%;"></div>
-
-                        <!-- Botón flotante de filtros dentro del contenedor -->
-                        <button id="btnFlotanteFiltros" class="btn btn-primary" style="position: absolute; bottom: 20px; right: 60px;" onclick="toggleFiltros()">
-                            <i class="bi bi-funnel-fill"></i>
-                        </button>
-
-                        <!-- Panel flotante de filtros dentro del contenedor -->
-                        <div id="panelFiltros" class="card p-3 position-absolute bg-light text-dark shadow" style="bottom: 80px; right: 20px; display: none; min-width: 250px;">
-                            <h6 class="fw-bold">Filtrar por Tipo:</h6>
-                            <div id="contenedorFiltros" class="d-flex flex-column gap-2 mb-2"></div>
-
-                            <h6 class="fw-bold">Filtrar por Estado:</h6>
-                            <div id="contenedorEstados" class="d-flex flex-column gap-2"></div>
-                        </div>
-
-                    </div>
+                    <div id="map" style="height: 400px; width: 100%; background-color: #2d2d2d;"></div>
                 </div>
-
             </div>
         </div>
     </main>

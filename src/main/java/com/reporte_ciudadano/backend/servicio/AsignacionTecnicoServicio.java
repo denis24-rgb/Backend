@@ -27,8 +27,7 @@ public class AsignacionTecnicoServicio {
 
     @Autowired
     private NotificacionServicio notificacionServicio;
-    @Autowired
-    private AsignacionTecnicoRepositorio repositorio;
+
     public List<AsignacionTecnico> listarTodas() {
         return asignacionRepo.findAll();
     }
@@ -49,9 +48,7 @@ public class AsignacionTecnicoServicio {
 
         return asignaciones;
     }
-    public Optional<AsignacionTecnico> buscarPorReporteId(Long reporteId) {
-        return repositorio.findByReporteId(reporteId);
-    }
+
     public AsignacionTecnico guardar(AsignacionTecnico asignacion) {
         return asignacionRepo.save(asignacion);
     }

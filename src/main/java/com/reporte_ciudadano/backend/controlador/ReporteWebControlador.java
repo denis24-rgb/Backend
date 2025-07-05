@@ -4,7 +4,6 @@ import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
 import com.reporte_ciudadano.backend.modelo.Evidencia;
 import com.reporte_ciudadano.backend.servicio.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -88,14 +87,14 @@ public class ReporteWebControlador {
     }
 
     @PostMapping("/eliminar")
-    @ResponseBody
-    public ResponseEntity<?> eliminarReporte(@RequestParam Long reporteId) {
+    public String eliminarReporte(@RequestParam Long reporteId, RedirectAttributes redirect) {
         try {
             reporteServicio.eliminarPorId(reporteId);
-            return ResponseEntity.ok().build();
+            redirect.addFlashAttribute("mensajeExito", "Reporte eliminado correctamente.");
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al eliminar el reporte: " + e.getMessage());
+            redirect.addFlashAttribute("mensajeError", "Error al eliminar el reporte: " + e.getMessage());
         }
+        return "redirect:/reportes";
     }
 
     @PostMapping("/{id}/cerrar")

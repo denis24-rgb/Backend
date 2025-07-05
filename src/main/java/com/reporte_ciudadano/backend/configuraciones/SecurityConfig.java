@@ -60,7 +60,7 @@ public class SecurityConfig {
                         .requestMatchers("/panel/operador/**").hasRole("OPERADOR")
 
 
-                        //  Estas rutas requieren token de sesión válido (autenticado)
+                        // ✅ Estas rutas requieren token de sesión válido (autenticado)
                         .requestMatchers(
                                 "/api/usuarios/**", // Incluye /{usuarioId}/notificaciones y más
                                 "/api/reportes/**",
@@ -80,7 +80,7 @@ public class SecurityConfig {
 
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/redirigir", true) //  Aquí hacemos que se redirija al controlador que
+                        .defaultSuccessUrl("/redirigir", true) // ✅ Aquí hacemos que se redirija al controlador que
                                                                // guarda sesión y maneja el rol
                         .failureUrl("/login?error")
                         .permitAll())

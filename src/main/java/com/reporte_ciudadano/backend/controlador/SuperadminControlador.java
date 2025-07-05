@@ -71,11 +71,12 @@ public class SuperadminControlador {
             Map<String, Object> reporteMap = new HashMap<>();
             reporteMap.put("id", r.getId());
             reporteMap.put("descripcion", r.getDescripcion());
-            reporteMap.put("estado", r.getEstado());  // ✅ Aquí el estado va como String, no como objeto
+            reporteMap.put("estado", r.getEstado()); // Ahora es String directamente
             reporteMap.put("fechaReporte", r.getFechaReporte() != null ? r.getFechaReporte().toString() : null);
             reporteMap.put("hora", r.getHora() != null ? r.getHora().toString() : null);
             reporteMap.put("ubicacion", r.getUbicacion());
 
+            // Relacionales, si están mapeadas como @ManyToOne puedes hacer esto:
             if (r.getInstitucion() != null) {
                 reporteMap.put("institucion", r.getInstitucion().getNombre());
             }

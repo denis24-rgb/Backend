@@ -1,6 +1,5 @@
 package com.reporte_ciudadano.backend.controlador;
 
-import com.reporte_ciudadano.backend.modelo.CategoriaReporte;
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
 import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
@@ -64,42 +63,30 @@ public class TipoReporteControlador {
     @PostMapping("/crear")
     public String crearTipoReporte(@RequestParam("nombre") String nombre,
                                    @RequestParam("icono") MultipartFile archivo,
-
-                                   @RequestParam(value = "institucionId", required = false) Long institucionId,
+                                   @RequestParam("institucionId") Long institucionId,
                                    @RequestParam("categoriaId") Long categoriaId,
                                    RedirectAttributes redirect) throws IOException {
+        if (!archivo.isEmpty() && archivo.getOriginalFilename().endsWith(".png")) {
+            String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
+            Path rutaFinal = Paths.get(RUTA_ICONOS, nombreArchivo);
+            Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
 
-        if (archivo.isEmpty() || !archivo.getOriginalFilename().endsWith(".png")) {
+            TipoReporte nuevoTipo = new TipoReporte();
+            nuevoTipo.setNombre(nombre);
+            nuevoTipo.setIcono(nombreArchivo);
+            tipoRepo.save(nuevoTipo);
+
+            InstitucionTipoReporte relacion = new InstitucionTipoReporte();
+            relacion.setTipoReporte(nuevoTipo);
+            relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
+            relacion.setCategoriaReporte(categoriaReporteServicio.obtenerPorId(categoriaId).orElseThrow());
+            institucionTipoReporteServicio.guardar(relacion);
+
+            redirect.addFlashAttribute("mensajeExito", "Tipo de reporte creado y asignado correctamente.");
+        } else {
             redirect.addFlashAttribute("mensajeError", "Debes subir un ícono válido (.png).");
-            return "redirect:/panel/superadmin/tipos-reportes";
         }
 
-        String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
-        Path rutaFinal = Paths.get(RUTA_ICONOS, nombreArchivo);
-        Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
-
-        // Guardar en base de datos
-        TipoReporte nuevoTipo = new TipoReporte();
-        nuevoTipo.setNombre(nombre);
-        nuevoTipo.setIcono(nombreArchivo);
-        tipoRepo.save(nuevoTipo);
-
-        CategoriaReporte categoria = categoriaReporteServicio.obtenerPorId(categoriaId)
-                .orElseThrow(() -> new IllegalArgumentException("Categoría no válida."));
-
-        if (!categoria.getNombre().toLowerCase().contains("aviso")) {
-            // Requiere institución
-            if (institucionId == null) {
-                redirect.addFlashAttribute("mensajeError", "Debes seleccionar una institución para esta categoría.");
-                return "redirect:/panel/superadmin/tipos-reportes";
-            }
-
-            relacion.setCategoriaReporte(categoria);
-
-            relacion.setCategoriaReporte(categoriaReporteServicio.obtenerPorId(categoriaId).orElseThrow());
-
-
-        redirect.addFlashAttribute("mensajeExito", "Tipo de reporte creado correctamente.");
         return "redirect:/panel/superadmin/tipos-reportes";
     }
 

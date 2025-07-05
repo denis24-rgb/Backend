@@ -2,7 +2,6 @@ package com.reporte_ciudadano.backend.repositorio;
 
 import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -19,7 +18,5 @@ public interface AsignacionTecnicoRepositorio extends JpaRepository<AsignacionTe
     long countByTecnicoIdAndReporte_EstadoIgnoreCaseAndFechaFinalizacionIsNull(Long tecnicoId, String estado);
     @Query("SELECT a FROM AsignacionTecnico a JOIN FETCH a.reporte r LEFT JOIN FETCH r.evidencias WHERE a.tecnico.id = :tecnicoId")
     List<AsignacionTecnico> listarPorTecnicoConEvidencias(@Param("tecnicoId") Long tecnicoId);
-    @Modifying
-    @Query("DELETE FROM AsignacionTecnico a WHERE a.reporte.id = :reporteId")
-    void eliminarPorReporteId(@Param("reporteId") Long reporteId);
+
 }

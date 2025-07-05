@@ -58,11 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function aplicarFiltros() {
         const estado = estadoSelect.value.toLowerCase();
-
-        // Tomamos el texto del tipo solo si el value está vacío o no
-        const tipoValue = tipoSelect.value;
-        const tipo = (tipoValue) ? tipoSelect.options[tipoSelect.selectedIndex].text.toLowerCase() : "";
-
+        const tipo = tipoSelect.value.toLowerCase();
         const tecnico = tecnicoSelect.value.toLowerCase();
         const soloAsignados = asignadoSelect && asignadoSelect.value === "asignados";
 

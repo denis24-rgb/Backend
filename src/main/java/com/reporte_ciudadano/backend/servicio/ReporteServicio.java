@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,8 +34,6 @@ public class ReporteServicio {
 
     @Autowired
     private ReporteRepositorio reporteRepositorio;
-    @Autowired
-    private EvidenciaRepositorio evidenciaRepositorio;
 
     @Autowired
     private HistorialEstadoRepositorio historialEstadoRepositorio;
@@ -91,11 +87,6 @@ public class ReporteServicio {
         nuevoReporte.setUbicacion(reporteEntrada.getUbicacion());
         nuevoReporte.setEstado("recibido");
 
-        // Asignar fecha y hora de Bolivia correctamente
-        nuevoReporte.setFechaReporte(LocalDate.now(ZoneId.of("America/La_Paz")));
-        nuevoReporte.setHora(LocalTime.now(ZoneId.of("America/La_Paz")));
-
-        // Guardar reporte
         Reporte guardado = reporteRepositorio.saveAndFlush(nuevoReporte);
         System.out.println("🆔 Reporte guardado con ID: " + guardado.getId());
 
@@ -112,8 +103,7 @@ public class ReporteServicio {
         historial.setEstadoAnterior("recibido");
         historial.setEstadoNuevo("recibido");
         historialEstadoRepositorio.save(historial);
-
-        // Crear notificación
+        // Creamos la notificacion
         notificacionServicio.crear(usuario, guardado, "📢 Tu reporte fue enviado correctamente.");
 
         return guardado;
@@ -257,21 +247,7 @@ public class ReporteServicio {
                 .orElseThrow(() -> new IllegalArgumentException("Reporte no encontrado"));
     }
 
-    @Transactional
     public void eliminarPorId(Long id) {
-        // 1. Eliminar historial de reporte
-        historialReporteRepositorio.eliminarPorReporteId(id);
-
-        // 2. Eliminar notificaciones asociadas
-        notificacionServicio.eliminarPorReporteId(id);
-
-        // 3. Eliminar asignaciones
-        asignacionTecnicoRepositorio.eliminarPorReporteId(id);
-
-        // 4. Eliminar evidencias
-        evidenciaRepositorio.eliminarPorReporteId(id);
-
-        // 5. Finalmente, eliminar el reporte
         reporteRepositorio.deleteById(id);
     }
 
