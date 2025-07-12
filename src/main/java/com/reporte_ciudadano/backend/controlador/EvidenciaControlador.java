@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.configuraciones.RutaProperties;
 import com.reporte_ciudadano.backend.modelo.Evidencia;
 import com.reporte_ciudadano.backend.modelo.Reporte;
 import com.reporte_ciudadano.backend.repositorio.EvidenciaRepositorio;
@@ -7,8 +8,7 @@ import com.reporte_ciudadano.backend.repositorio.ReporteRepositorio;
 import com.reporte_ciudadano.backend.servicio.EvidenciaServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,17 +21,18 @@ import java.security.Principal;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
 @RestController
 @RequestMapping("/api/evidencias")
 @CrossOrigin(origins = "*")
 public class EvidenciaControlador {
 
     private final EvidenciaServicio servicio;
+
+    @Autowired
+    private RutaProperties ruta; // ✅ Ruta dinámica
 
     @Autowired
     private EvidenciaRepositorio evidenciaRepositorio;
@@ -42,8 +43,6 @@ public class EvidenciaControlador {
     public EvidenciaControlador(EvidenciaServicio servicio) {
         this.servicio = servicio;
     }
-
-    private static final String UPLOAD_DIR = "/opt/reporte_ciudadano/evidencias/";
 
     @GetMapping
     public List<Evidencia> listar() {
@@ -82,10 +81,8 @@ public class EvidenciaControlador {
                 return ResponseEntity.badRequest().body("Reporte no encontrado");
             }
 
-            String correo = principal.getName();
-            System.out.println("Usuario autenticado: " + correo);
-
-            File directorio = new File(UPLOAD_DIR);
+            String uploadDir = ruta.getEvidencias(); // ✅ Ruta por perfil
+            File directorio = new File(uploadDir);
             if (!directorio.exists()) {
                 directorio.mkdirs();
             }
@@ -97,7 +94,7 @@ public class EvidenciaControlador {
 
             String nombreArchivo = UUID.randomUUID() + "_" +
                     StringUtils.cleanPath(originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_"));
-            String rutaArchivo = UPLOAD_DIR + nombreArchivo;
+            String rutaArchivo = uploadDir + nombreArchivo;
 
             archivo.transferTo(new File(rutaArchivo));
 
@@ -120,8 +117,9 @@ public class EvidenciaControlador {
     @GetMapping("/ver/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verEvidencia(@PathVariable String nombreArchivo) {
         try {
-            Path ruta = Paths.get(UPLOAD_DIR + nombreArchivo);
-            Resource recurso = new UrlResource(ruta.toUri());
+            String uploadDir = ruta.getEvidencias(); // ✅ Ruta dinámica
+            Path rutaArchivo = Paths.get(uploadDir).resolve(nombreArchivo).normalize();
+            Resource recurso = new UrlResource(rutaArchivo.toUri());
 
             if (!recurso.exists() || !recurso.isReadable()) {
                 return ResponseEntity.notFound().build();
@@ -129,7 +127,7 @@ public class EvidenciaControlador {
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + recurso.getFilename() + "\"")
-                    .contentType(MediaType.IMAGE_JPEG) // Puedes personalizar según el tipo real de archivo
+                    .contentType(MediaTypeFactory.getMediaType(recurso).orElse(MediaType.APPLICATION_OCTET_STREAM))
                     .body(recurso);
 
         } catch (Exception e) {

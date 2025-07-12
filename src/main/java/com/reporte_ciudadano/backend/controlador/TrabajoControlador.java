@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -15,22 +16,28 @@ import java.nio.file.Paths;
 @CrossOrigin(origins = "*")
 public class TrabajoControlador {
 
-    private static final String CARPETA_TRABAJOS = "/opt/reporte_ciudadano/imagenes-trabajos/";
+    @Value("${ruta.trabajos}")
+    private String rutaTrabajos;
 
     @GetMapping("/ver/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verImagenTrabajo(@PathVariable String nombreArchivo) {
         try {
-            Path ruta = Paths.get(CARPETA_TRABAJOS + nombreArchivo);
+            Path ruta = Paths.get(rutaTrabajos).resolve(nombreArchivo);
             Resource recurso = new UrlResource(ruta.toUri());
 
             if (!recurso.exists() || !recurso.isReadable()) {
                 return ResponseEntity.notFound().build();
             }
 
-            // Puedes ajustar según el tipo de imagen real
+            // Detectar tipo MIME automáticamente
+            MediaType mediaType = MediaType.IMAGE_JPEG;
+            if (nombreArchivo.toLowerCase().endsWith(".png")) {
+                mediaType = MediaType.IMAGE_PNG;
+            }
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + recurso.getFilename() + "\"")
-                    .contentType(MediaType.IMAGE_JPEG)
+                    .contentType(mediaType)
                     .body(recurso);
 
         } catch (Exception e) {

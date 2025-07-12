@@ -34,7 +34,7 @@ function cargarReportes() {
         const posicion = { lat: parseFloat(reporte.latitud), lng: parseFloat(reporte.longitud) };
 
         const icono = reporte.tipoReporte?.icono
-            ? `/imagenes/${reporte.tipoReporte.icono}`
+            ? `/imagenes/iconos/${reporte.tipoReporte.icono}`
             : "/imagenes/icono-default.png";
 
         const marker = new google.maps.Marker({

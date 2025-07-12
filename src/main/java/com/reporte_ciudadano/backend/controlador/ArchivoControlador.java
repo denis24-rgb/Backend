@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.configuraciones.RutaProperties;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.*;
@@ -10,15 +11,19 @@ import java.nio.file.*;
 
 @RestController
 @RequestMapping("/archivos")
-@CrossOrigin(origins = "*") // Importante para que Flutter acceda
+@CrossOrigin(origins = "*") // Para que Flutter pueda acceder
 public class ArchivoControlador {
 
-    private final Path rutaEvidencias = Paths.get("/opt/reporte_ciudadano/evidencias"); // Ruta VPS
+    private final RutaProperties rutaProperties;
+
+    public ArchivoControlador(RutaProperties rutaProperties) {
+        this.rutaProperties = rutaProperties;
+    }
 
     @GetMapping("/{nombreArchivo:.+}")
     public ResponseEntity<Resource> verArchivo(@PathVariable String nombreArchivo) {
         try {
-            Path archivo = rutaEvidencias.resolve(nombreArchivo).normalize();
+            Path archivo = Paths.get(rutaProperties.getEvidencias()).resolve(nombreArchivo).normalize();
             Resource recurso = new UrlResource(archivo.toUri());
 
             if (!recurso.exists()) {
