@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.modelo.CategoriaReporte;
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
 import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
@@ -10,6 +11,7 @@ import com.reporte_ciudadano.backend.servicio.InstitucionTipoReporteServicio;
 import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,7 +24,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/panel/superadmin/tipos-reportes")
@@ -30,7 +36,6 @@ import java.util.List;
 public class TipoReporteControlador {
 
     private final TipoReporteServicio servicio;
-
     @Autowired
     private TipoReporteRepositorio tipoRepo;
 
@@ -54,6 +59,7 @@ public class TipoReporteControlador {
 
     @GetMapping
     public String mostrarVista(Model model) {
+
         model.addAttribute("tipos", tipoRepo.findAll());
         model.addAttribute("instituciones", institucionServicio.listarTodas());
         model.addAttribute("categorias", categoriaReporteServicio.listarTodas());
@@ -63,41 +69,57 @@ public class TipoReporteControlador {
     @PostMapping("/crear")
     public String crearTipoReporte(@RequestParam("nombre") String nombre,
                                    @RequestParam("icono") MultipartFile archivo,
-                                   @RequestParam("institucionId") Long institucionId,
+                                   @RequestParam(value = "institucionId", required = false) Long institucionId,
                                    @RequestParam("categoriaId") Long categoriaId,
                                    RedirectAttributes redirect) throws IOException {
-        if (!archivo.isEmpty() && archivo.getOriginalFilename().endsWith(".png")) {
-            String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
-            Path rutaFinal = Paths.get(RUTA_ICONOS, nombreArchivo);
-            Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
 
-            TipoReporte nuevoTipo = new TipoReporte();
-            nuevoTipo.setNombre(nombre);
-            nuevoTipo.setIcono(nombreArchivo);
-            tipoRepo.save(nuevoTipo);
+        if (archivo.isEmpty() || !archivo.getOriginalFilename().endsWith(".png")) {
+            redirect.addFlashAttribute("mensajeError", "Debes subir un ícono válido (.png).");
+            return "redirect:/panel/superadmin/tipos-reportes";
+        }
+
+        String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
+        Path rutaFinal = Paths.get(RUTA_ICONOS, nombreArchivo);
+        Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
+
+        // Guardar en base de datos
+        TipoReporte nuevoTipo = new TipoReporte();
+        nuevoTipo.setNombre(nombre);
+        nuevoTipo.setIcono(nombreArchivo);
+        tipoRepo.save(nuevoTipo);
+
+        CategoriaReporte categoria = categoriaReporteServicio.obtenerPorId(categoriaId)
+                .orElseThrow(() -> new IllegalArgumentException("Categoría no válida."));
+
+        if (!categoria.getNombre().toLowerCase().contains("aviso")) {
+            // Requiere institución
+            if (institucionId == null) {
+                redirect.addFlashAttribute("mensajeError", "Debes seleccionar una institución para esta categoría.");
+                return "redirect:/panel/superadmin/tipos-reportes";
+            }
 
             InstitucionTipoReporte relacion = new InstitucionTipoReporte();
             relacion.setTipoReporte(nuevoTipo);
             relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
-            relacion.setCategoriaReporte(categoriaReporteServicio.obtenerPorId(categoriaId).orElseThrow());
+            relacion.setCategoriaReporte(categoria);
             institucionTipoReporteServicio.guardar(relacion);
-
-            redirect.addFlashAttribute("mensajeExito", "Tipo de reporte creado y asignado correctamente.");
-        } else {
-            redirect.addFlashAttribute("mensajeError", "Debes subir un ícono válido (.png).");
         }
 
+        redirect.addFlashAttribute("mensajeExito", "Tipo de reporte creado correctamente.");
         return "redirect:/panel/superadmin/tipos-reportes";
     }
 
     @PostMapping("/eliminar")
     public String eliminarTipoReporte(@RequestParam("id") Long id, RedirectAttributes redirect) {
         try {
+            // Obtener el tipo antes de eliminarlo para conocer el ícono
             TipoReporte tipo = tipoRepo.findById(id).orElse(null);
+
             if (tipo != null) {
                 Path rutaIcono = Paths.get(RUTA_ICONOS, tipo.getIcono());
                 Files.deleteIfExists(rutaIcono);
             }
+            // Eliminar el registro de la base de datos
             tipoRepo.deleteById(id);
             redirect.addFlashAttribute("mensajeExito", "Tipo de reporte eliminado correctamente.");
         } catch (Exception e) {
@@ -109,24 +131,28 @@ public class TipoReporteControlador {
 
     @PostMapping("/editar")
     public String editarTipoReporte(@RequestParam Long id,
-                                    @RequestParam String nombre,
-                                    @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-                                    @RequestParam Long institucionId,
-                                    @RequestParam Long categoriaId,
-                                    RedirectAttributes redirectAttributes) {
+            @RequestParam String nombre,
+            @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
+            @RequestParam Long institucionId,
+            @RequestParam Long categoriaId,
+            RedirectAttributes redirectAttributes) {
         try {
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
             tipo.setNombre(nombre);
 
             if (iconoFile != null && !iconoFile.isEmpty()) {
+                // Eliminar el anterior
                 String iconoAnterior = tipo.getIcono();
                 Path rutaAnterior = Paths.get(RUTA_ICONOS, iconoAnterior);
                 Files.deleteIfExists(rutaAnterior);
 
+                // Guardar el nuevo ícono
                 String nombreOriginal = iconoFile.getOriginalFilename();
                 Path rutaDestino = Paths.get(RUTA_ICONOS, nombreOriginal);
 
+                // Verificar si ya existe un archivo con ese nombre
                 if (Files.exists(rutaDestino)) {
+                    // Si existe, se genera un nombre único para no sobrescribir
                     String nombreUnico = System.currentTimeMillis() + "_" + nombreOriginal;
                     rutaDestino = Paths.get(RUTA_ICONOS, nombreUnico);
                     tipo.setIcono(nombreUnico);
@@ -134,11 +160,14 @@ public class TipoReporteControlador {
                     tipo.setIcono(nombreOriginal);
                 }
 
+                // Guardar el archivo (nuevo o con nombre original)
                 Files.copy(iconoFile.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
+
             }
 
             tipoRepo.save(tipo);
 
+            // 🔄 Actualizar relación en InstitucionTipoReporte
             InstitucionTipoReporte relacion = institucionTipoReporteServicio.buscarPorTipoReporteId(id);
             if (relacion != null) {
                 relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
@@ -168,4 +197,5 @@ public class TipoReporteControlador {
     public List<TipoReporte> obtenerPorCategoria(@RequestParam Long categoria) {
         return servicio.listarPorCategoria(categoria);
     }
+
 }
