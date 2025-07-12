@@ -104,54 +104,6 @@ public class InicioControlador {
     }
 
 
-//    @GetMapping("/inicio-operador")
-//    public String vistaOperador(Model model, Principal principal) throws JsonProcessingException {
-//        UsuarioInstitucional usuario = usuarioInstitucionalServicio.obtenerPorCorreo(principal.getName()).orElse(null);
-//        Institucion institucion = usuario.getInstitucion();
-//
-//        List<Reporte> listaReportes = reporteServicio.obtenerConUbicacionPorInstitucion(institucion.getId());
-//        List<UsuarioInstitucional> tecnicos = usuarioInstitucionalServicio.listarTecnicosPorInstitucion(institucion.getId());
-//
-//        // 🔧 Mapa controlado para evitar recursión infinita
-//        List<Map<String, Object>> reportesMap = listaReportes.stream().map(r -> {
-//            Map<String, Object> reporteMap = new HashMap<>();
-//            reporteMap.put("id", r.getId());
-//            reporteMap.put("descripcion", r.getDescripcion());
-//            reporteMap.put("estado", r.getEstado());
-//            reporteMap.put("ubicacion", r.getUbicacion());
-//
-//            if (r.getTipoReporte() != null) {
-//                Map<String, Object> tipo = new HashMap<>();
-//                tipo.put("nombre", r.getTipoReporte().getNombre());
-//                tipo.put("icono", r.getTipoReporte().getIcono());
-//                reporteMap.put("tipoReporte", tipo);
-//            }
-//
-//            return reporteMap;
-//        }).toList();
-//
-//        ObjectMapper mapper = new ObjectMapper();
-//        mapper.registerModule(new JavaTimeModule());
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-//        String reportesJSON = mapper.writeValueAsString(reportesMap);
-//
-//        List<Map<String, Object>> tecnicosMap = tecnicos.stream().map(t -> {
-//            Map<String, Object> tecnicoMap = new HashMap<>();
-//            tecnicoMap.put("id", t.getId());
-//            tecnicoMap.put("nombre", t.getNombre());
-//            return tecnicoMap;
-//        }).toList();
-//
-//        int reportesActivos = reporteServicio.contarReportesActivosPorInstitucion(institucion.getId());
-//        int asignacionesPendientes = reporteServicio.contarAsignacionesPendientesPorInstitucion(institucion.getId());
-//
-//        model.addAttribute("reportesJSON", reportesJSON);
-//        model.addAttribute("tecnicos", tecnicosMap);
-//        model.addAttribute("reportesActivos", reportesActivos);
-//        model.addAttribute("asignacionesPendientes", asignacionesPendientes);
-//
-//        return "operador";
-//    }
 
     @GetMapping("/redirigir")
     public String redirigirSegunRol(Principal principal, HttpSession session) {
