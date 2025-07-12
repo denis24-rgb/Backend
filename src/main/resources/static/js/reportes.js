@@ -157,5 +157,126 @@ modalMapa.addEventListener('shown.bs.modal', function (event) {
         mapaIndividual.setCenter({ lat, lng });
     }, 500);
 });
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.modal-body img').forEach(img => {
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+
+        img.style.transformOrigin = "center center";
+
+        img.addEventListener('wheel', (e) => {
+            e.preventDefault();
+
+            const container = img.closest('.modal-body');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+
+            const imgWidth = img.clientWidth;
+            const imgHeight = img.clientHeight;
+
+            const prevScale = scale;
+            const zoomSpeed = 0.1;
+
+            if (e.deltaY < 0) {
+                scale += zoomSpeed;
+            } else {
+                scale -= zoomSpeed;
+            }
+
+            scale = Math.min(Math.max(1, scale));
+
+            const scaledWidth = imgWidth * scale;
+            const scaledHeight = imgHeight * scale;
+
+            // Limitar para que no se desplace fuera del modal
+            const maxX = Math.max(0, (scaledWidth - containerWidth) / 2);
+            const maxY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+            translateX = Math.min(maxX, Math.max(-maxX, translateX));
+            translateY = Math.min(maxY, Math.max(-maxY, translateY));
+
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        });
+
+        img.addEventListener('mousedown', (e) => {
+            if (scale <= 1) return;
+            isDragging = true;
+            startX = e.clientX - translateX;
+            startY = e.clientY - translateY;
+            img.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const container = img.closest('.modal-body');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+
+            const imgWidth = img.clientWidth;
+            const imgHeight = img.clientHeight;
+
+            translateX = e.clientX - startX;
+            translateY = e.clientY - startY;
+
+            const scaledWidth = imgWidth * scale;
+            const scaledHeight = imgHeight * scale;
+
+            const maxX = Math.max(0, (scaledWidth - containerWidth) / 2);
+            const maxY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+            translateX = Math.min(maxX, Math.max(-maxX, translateX));
+            translateY = Math.min(maxY, Math.max(-maxY, translateY));
+
+            img.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                img.style.cursor = scale > 1 ? 'grab' : 'default';
+            }
+        });
+
+        img.closest('.modal').addEventListener('hidden.bs.modal', () => {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            img.style.transform = 'scale(1)';
+            img.style.cursor = 'default';
+        });
+    });
+});
+let idFormularioCambioTipo = "";
+
+function confirmarCambioTipo(boton) {
+    const reporteId = boton.getAttribute("data-reporte-id");
+    const tipoActual = boton.getAttribute("data-tipo-actual");
+    const idSelectTipo = boton.getAttribute("data-tipo-select-id");
+
+    const select = document.getElementById(idSelectTipo);
+    const tipoNuevo = select.options[select.selectedIndex].text;
+
+    // Mostrar tipos en el modal
+    document.getElementById('tipoActual').innerText = tipoActual;
+    document.getElementById('tipoNuevo').innerText = tipoNuevo;
+
+    // Guardar el id del formulario
+    idFormularioCambioTipo = "formCambiarTipo_" + reporteId;
+
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalConfirmarCambioTipo'));
+    modal.show();
+}
+
+document.getElementById('btnConfirmarCambioTipo').addEventListener('click', () => {
+    document.getElementById(idFormularioCambioTipo).submit();
+});
+
 
 

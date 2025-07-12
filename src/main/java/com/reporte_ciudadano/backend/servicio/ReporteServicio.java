@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +45,8 @@ public class ReporteServicio {
             "recibido", "en proceso", "resuelto", "cerrado");
     @Autowired
     private AsignacionTecnicoRepositorio asignacionTecnicoRepositorio;
+    @Autowired
+    private HistorialReporteRepositorio historialReporteRepositorio;
 
     public ReporteServicio(ReporteRepositorio reporteRepositorio,
             HistorialEstadoRepositorio historialEstadoRepositorio) {
@@ -280,12 +283,56 @@ public class ReporteServicio {
 
         return true;
     }
+    public void cambiarTipo(Long reporteId, Long tipoReporteId, UsuarioInstitucional usuario) {
+        var reporte = reporteRepositorio.findById(reporteId)
+                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
 
+        // Buscar la nueva relación donde ese tipo de reporte está asignado a alguna institución
+        var nuevaRelacion = institucionTipoReporteRepositorio.findByTipoReporteId(tipoReporteId)
+                .orElseThrow(() -> new RuntimeException("El tipo de reporte no está asignado a ninguna institución"));
 
+        String tipoAnterior = reporte.getTipoReporte().getNombre();
+        String institucionAnterior = (reporte.getInstitucion() != null) ? reporte.getInstitucion().getNombre() : "Sin asignar";
 
-    
+        // Aquí se actualiza tanto el tipo como la institución
+        reporte.setTipoReporte(nuevaRelacion.getTipoReporte());
+        reporte.setInstitucion(nuevaRelacion.getInstitucion());
+
+        reporteRepositorio.save(reporte);
+
+        // Registrar en historial
+        var historial = new HistorialReporte();
+        historial.setDetalle("Tipo de reporte cambiado de " + tipoAnterior + " a " + nuevaRelacion.getTipoReporte().getNombre()
+                + ". La institución pasó de " + institucionAnterior + " a " + nuevaRelacion.getInstitucion().getNombre() + ".");
+        historial.setReporte(reporte);
+        historial.setUsuario(usuario);
+        historial.setFechaHora(LocalDateTime.now());
+
+        historialReporteRepositorio.save(historial);
+    }
     public int contarTotalReportesPorInstitucion(Long institucionId) {
         return reporteRepositorio.contarPorInstitucion(institucionId);
+    }
+    public List<String> obtenerNombresTiposReporte() {
+        return reporteRepositorio.obtenerNombresTiposConCantidad();
+    }
+
+    public List<Long> contarReportesPorTipo() {
+        return reporteRepositorio.contarPorCadaTipo();
+    }
+    public List<String> obtenerMesesConFormato() {
+        return reporteRepositorio.obtenerMesesConFormato();
+    }
+
+    public List<Long> contarReportesPorMes() {
+        return reporteRepositorio.contarPorCadaMes();
+    }
+    public List<String> obtenerDiasEnRango(LocalDate inicio, LocalDate fin) {
+        return reporteRepositorio.obtenerDiasEnRango(inicio, fin);
+    }
+
+    public List<Long> contarReportesPorDiaEnRango(LocalDate inicio, LocalDate fin) {
+        return reporteRepositorio.contarReportesPorDiaEnRango(inicio, fin);
     }
 
 }

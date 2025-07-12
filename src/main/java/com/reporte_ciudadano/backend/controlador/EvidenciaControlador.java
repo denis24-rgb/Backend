@@ -17,7 +17,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-import java.security.Principal; // ⬅️ importante
+import java.security.Principal;
+
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/api/evidencias")
@@ -35,6 +42,8 @@ public class EvidenciaControlador {
     public EvidenciaControlador(EvidenciaServicio servicio) {
         this.servicio = servicio;
     }
+
+    private static final String UPLOAD_DIR = "/opt/reporte_ciudadano/evidencias/";
 
     @GetMapping
     public List<Evidencia> listar() {
@@ -55,8 +64,6 @@ public class EvidenciaControlador {
     public void eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
     }
-
-    private static final String UPLOAD_DIR = "C:/evidencias/";
 
     @PostMapping("/subir")
     public ResponseEntity<?> subirEvidencia(
@@ -97,7 +104,7 @@ public class EvidenciaControlador {
             Evidencia evidencia = new Evidencia();
             evidencia.setReporte(reporte);
             evidencia.setTipoEvidencia(tipo);
-            evidencia.setUrl(nombreArchivo); // Guardar solo el nombre del archivo
+            evidencia.setUrl(nombreArchivo);
 
             evidenciaRepositorio.save(evidencia);
 
@@ -110,4 +117,23 @@ public class EvidenciaControlador {
         }
     }
 
+    @GetMapping("/ver/{nombreArchivo:.+}")
+    public ResponseEntity<Resource> verEvidencia(@PathVariable String nombreArchivo) {
+        try {
+            Path ruta = Paths.get(UPLOAD_DIR + nombreArchivo);
+            Resource recurso = new UrlResource(ruta.toUri());
+
+            if (!recurso.exists() || !recurso.isReadable()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + recurso.getFilename() + "\"")
+                    .contentType(MediaType.IMAGE_JPEG) // Puedes personalizar según el tipo real de archivo
+                    .body(recurso);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }

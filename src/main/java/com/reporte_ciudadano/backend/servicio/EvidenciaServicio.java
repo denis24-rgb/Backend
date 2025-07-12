@@ -33,5 +33,8 @@ public class EvidenciaServicio {
     public Evidencia buscarPrimeraImagenPorReporte(Long reporteId) {
         return repositorio.findTopByReporteIdAndTipoEvidencia(reporteId, "imagen");
     }
+    public List<Evidencia> listarPorReporte(Long reporteId) {
+        return repositorio.findByReporteId(reporteId);
+    }
 
 }

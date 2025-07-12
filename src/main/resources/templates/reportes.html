@@ -5,6 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Panel de Reportes</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" th:href="@{/css/reportes.css}">
@@ -34,7 +35,7 @@
                         <label for="filtroTipo" class="form-label">📋 Tipo de Reporte</label>
                         <select id="filtroTipo" class="form-select">
                             <option value="">Todos</option>
-                            <option th:each="tipo : ${tipos}" th:value="${tipo}" th:text="${tipo}"></option>
+                            <option th:each="tipo : ${tipos}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -52,7 +53,12 @@
                         </select>
                     </div>
                     <div class="col-12 d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-outline-secondary me-2" onclick="limpiarFiltros()">🧹 Limpiar</button>
+                        <div class="col-12 d-flex justify-content-end mt-3">
+                            <button type="button" class="btn btn-outline-secondary me-2" onclick="limpiarFiltros()">
+                                <i class="bi bi-arrow-clockwise"></i> Limpiar
+                            </button>
+                        </div>
+
                     </div>
                 </form>
             </div>
@@ -62,7 +68,16 @@
             <div class="col-md-6 col-lg-4 mb-4" th:each="reporte : ${reportes}">
                 <div class="card tarjeta-reporte h-100 shadow-sm border-start border-4 border-primary">
                     <div class="card-body">
-                        <h5 class="card-title text-primary fw-bold" th:text="${reporte.tipoReporte?.nombre}">Tipo</h5>
+                        <h5 class="card-title text-primary fw-bold d-flex justify-content-between align-items-center">
+                            <span th:text="${reporte.tipoReporte?.nombre}">Tipo</span>
+
+                            <!-- Botón de cambiar tipo de reporte -->
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                    data-bs-toggle="modal" th:data-bs-target="'#modalCambiarTipo_' + ${reporte.id}">
+                                <i class="bi bi-pencil-square"></i>
+
+                            </button>
+                        </h5>
                         <p><strong>Descripción:</strong> <span th:text="${reporte.descripcion}">---</span></p>
                         <p>
                             <strong>Ubicación:</strong>
@@ -76,6 +91,34 @@
                         <p><strong>Institución:</strong> <span th:text="${reporte.institucion?.nombre ?: 'Sin asignar'}">---</span></p>
                         <p><strong>Fecha:</strong> <span th:text="${#temporals.format(reporte.fechaReporte, 'dd/MM/yyyy')}">---</span></p>
                         <p><strong>Estado:</strong> <span class="estado-reporte" th:text="${reporte.estado}">---</span></p>
+
+                        <!-- Evidencias del Ciudadano -->
+                        <div th:if="${evidenciasPorReporte != null and evidenciasPorReporte[reporte.id] != null}">
+                            <div th:each="evidencia : ${evidenciasPorReporte[reporte.id]}">
+                                <h6 class="mt-2">Evidencia del Reporte:</h6>
+                                <button type="button" class="btn p-0 border-0 bg-transparent btn-evidencia" data-bs-toggle="modal" th:data-bs-target="'#modalEvidenciaCiudadano_' + ${evidencia.id}">
+                                    <img th:src="@{'/imagenes/' + ${evidencia.url}}"
+                                         class="img-thumbnail"
+                                         style="width: 100px; cursor: pointer;"
+                                         alt="Evidencia">
+                                </button>
+
+                                <!-- Modal para visualizar evidencia del ciudadano -->
+                                <div class="modal fade modal-evidencia" th:id="'modalEvidenciaCiudadano_' + ${evidencia.id}" tabindex="-1">
+                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-dark text-white">
+                                                <h5 class="modal-title">Evidencia del Reporte</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                            </div>
+                                            <div class="modal-body text-center">
+                                                <img th:src="@{'/imagenes/' + ${evidencia.url}}" class="img-fluid rounded">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div th:if="${asignaciones != null and asignaciones[reporte.id] != null}">
                             <span class="badge bg-success">👷 Técnico: <span th:text="${asignaciones[reporte.id]?.tecnico?.nombre}">Nombre Técnico</span></span>
@@ -94,8 +137,8 @@
                             </form>
                         </div>
 
-                        <div th:if="${reporte.estado == 'resuelto' and asignaciones != null and asignaciones[reporte.id]?.imagenTrabajo != null}">
-                            <h6 class="mt-2">📷 Evidencia de Trabajo:</h6>
+                        <div th:if="${(reporte.estado == 'resuelto' or reporte.estado == 'cerrado') and asignaciones != null and asignaciones[reporte.id]?.imagenTrabajo != null}">
+                        <h6 class="mt-2">Evidencia de Trabajo:</h6>
 
                             <button type="button" class="btn p-0 border-0 bg-transparent btn-evidencia" data-bs-toggle="modal" th:data-bs-target="'#modalEvidencia_' + ${reporte.id}">
                                 <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}"
@@ -104,22 +147,50 @@
                                      alt="Evidencia del Técnico">
                             </button>
                         </div>
+                        <div class="modal fade" th:id="'modalCambiarTipo_' + ${reporte.id}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Cambiar Tipo de Reporte</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form th:action="@{/reportes/cambiar-tipo}" method="post" th:id="'formCambiarTipo_' + ${reporte.id}">
+                                        <div class="modal-body">
+                                            <input type="hidden" name="reporteId" th:value="${reporte.id}" />
+                                            <label th:for="'nuevoTipo_' + ${reporte.id}" class="form-label">Seleccione el tipo correcto:</label>
+                                            <select th:id="'nuevoTipo_' + ${reporte.id}" name="tipoReporteId" class="form-select" required>
+                                                <option th:each="tipo : ${tipos}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
+                                            </select>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-primary"
+                                                    th:attr="data-reporte-id=${reporte.id},
+                 data-tipo-actual=${reporte.tipoReporte?.nombre},
+                 data-tipo-select-id='nuevoTipo_' + ${reporte.id}"
+                                                    onclick="confirmarCambioTipo(this)">Guardar Cambios</button>
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
 
 
-                        <div class="modal fade" th:id="'modalEvidencia_' + ${reporte.id}" tabindex="-1">
-                                <div class="modal-dialog modal-dialog-centered modal-lg">
-                                    <div class="modal-content">
-                                        <div class="modal-header bg-dark text-white">
-                                            <h5 class="modal-title">📷 Evidencia Final del Técnico</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}" class="img-fluid rounded">
-                                        </div>
+                        <!-- Modal para visualizar evidencia final del técnico -->
+                        <div class="modal fade modal-evidencia" th:id="'modalEvidencia_' + ${reporte.id}" tabindex="-1">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-dark text-white">
+                                        <h5 class="modal-title">Evidencia Final del Técnico</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                    </div>
+                                    <div class="modal-body text-center">
+                                        <img th:src="@{'/imagenes/' + ${asignaciones[reporte.id]?.imagenTrabajo}}" class="img-fluid rounded">
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
                         <div th:if="${reporte.estado == 'resuelto'}" sec:authorize="hasAnyRole('ADMINISTRADOR','SUPERADMIN')">
                             <form th:action="@{/reportes/{id}/cerrar(id=${reporte.id})}" method="post">
@@ -164,6 +235,7 @@
     </div>
 </div>
 
+<!-- Modal Mapa SIN CLASE, NO SE TOCA -->
 <div class="modal fade" id="modalMapa" tabindex="-1" aria-labelledby="modalMapaLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -177,6 +249,26 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="modalConfirmarCambioTipo" tabindex="-1" aria-labelledby="confirmarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title" id="confirmarLabel">Confirmar Cambio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                ¿Seguro que deseas cambiar el tipo de <strong><span id="tipoActual"></span></strong> a <strong><span id="tipoNuevo"></span></strong>?<br>
+                Este cambio también puede afectar a la institución asignada.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" id="btnConfirmarCambioTipo">Sí, cambiar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script th:src="@{/js/reportes.js}"></script>

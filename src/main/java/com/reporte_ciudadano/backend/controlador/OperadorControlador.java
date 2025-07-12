@@ -60,7 +60,7 @@ public class OperadorControlador {
                     reporteMap.put("latitud", latitud);
                     reporteMap.put("longitud", longitud);
                 } catch (NumberFormatException e) {
-                    // Si falla el parseo, no se agregan las coordenadas
+                    // Si falla èl parseo, no se agregan las coordenadas
                 }
             }
 
