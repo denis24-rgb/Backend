@@ -8,13 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import com.reporte_ciudadano.backend.configuraciones.RutaProperties;
 import com.reporte_ciudadano.backend.modelo.AvisoComunitario;
 import com.reporte_ciudadano.backend.modelo.Notificacion;
 import com.reporte_ciudadano.backend.modelo.TipoAvisoComunitario;
@@ -23,6 +17,13 @@ import com.reporte_ciudadano.backend.repositorio.NotificacionRepositorio;
 import com.reporte_ciudadano.backend.repositorio.TipoAvisoComunitarioRepositorio;
 import com.reporte_ciudadano.backend.repositorio.UsuarioRepositorio;
 import com.reporte_ciudadano.backend.servicio.AvisoComunitarioServicio;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/avisos")
@@ -33,13 +34,19 @@ public class AvisoComunitarioControlador {
 
     @Autowired
     private UsuarioRepositorio usuarioRepo;
+
     @Autowired
     private TipoAvisoComunitarioRepositorio tipoAvisoRepo;
 
     @Autowired
     private NotificacionRepositorio notificacionRepositorio;
 
-    private final String rutaImagenes = "/opt/reporte_ciudadano/avisos-comunitarios/";
+    private final RutaProperties rutaProperties;
+
+    @Autowired
+    public AvisoComunitarioControlador(RutaProperties rutaProperties) {
+        this.rutaProperties = rutaProperties;
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> crearAviso(
@@ -61,6 +68,7 @@ public class AvisoComunitarioControlador {
             AvisoComunitario aviso = new AvisoComunitario();
             aviso.setDescripcion(descripcion);
             aviso.setUsuario(usuario);
+
             TipoAvisoComunitario tipo = tipoAvisoRepo.findById(tipoAvisoId).orElse(null);
             if (tipo == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de aviso no encontrado.");
@@ -69,9 +77,12 @@ public class AvisoComunitarioControlador {
 
             if (imagen != null && !imagen.isEmpty()) {
                 String nombreArchivo = UUID.randomUUID() + "_" + imagen.getOriginalFilename();
-                Path ruta = Paths.get(rutaImagenes + nombreArchivo);
+                String rutaBase = rutaProperties.getAvisos(); // ← Ruta dinámica
+                Path ruta = Paths.get(rutaBase + nombreArchivo);
                 Files.createDirectories(ruta.getParent());
                 Files.write(ruta, imagen.getBytes());
+
+                // URL pública de acceso
                 aviso.setImagenUrl("/imagenes/avisos/" + nombreArchivo);
             }
 
