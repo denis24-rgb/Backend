@@ -86,23 +86,25 @@
                         <img th:src="@{/imagenes/{archivo}(archivo=${tipo.icono})}" alt="icono" width="38" height="38">
                         <span th:text="${tipo.icono}"></span>
                     </td>
-                    <td th:text="${tipo.asignaciones[0].institucion.nombre}">Institución</td>
-                    <td th:text="${tipo.asignaciones[0].categoriaReporte.nombre}">Categoría</td>
+                    <td th:text="${tipo.asignaciones.size() > 0 ? tipo.asignaciones[0].institucion.nombre : ''}">Institución</td>
+                    <td th:text="${tipo.asignaciones.size() > 0 ? tipo.asignaciones[0].categoriaReporte.nombre : 'Aviso Comunitario'}">Categoría</td>
 
                     <td>
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalEditar"
-                                th:attr="data-id=${tipo.id}, data-nombre=${tipo.nombre}, data-icono=${tipo.icono}">
+                                th:attr="data-id=${tipo.id}, data-nombre=${tipo.nombre}, data-icono=${tipo.icono},
+                     data-esaviso=${tipo.asignaciones.size() == 0}">
                             ✏️ Editar
                         </button>
 
                         <button class="btn btn-danger btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalEliminar"
-                                th:attr="data-id=${tipo.id}, data-nombre=${tipo.nombre}">
+                                th:attr="data-id=${tipo.id}, data-nombre=${tipo.nombre},
+                     data-esaviso=${tipo.asignaciones.size() == 0}">
                             🗑 Eliminar
                         </button>
-
                     </td>
+
                 </tr>
                 <tr th:if="${tipos.size() == 0}">
                     <td colspan="4" class="text-center text-muted">No hay tipos registrados.</td>
@@ -111,6 +113,7 @@
             </table>
         </div>
     </div>
+
 </div>
 <!-- Modal Editar -->
 <div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
@@ -175,7 +178,7 @@
                 ¿Estás seguro de que deseas eliminar el tipo de reporte: <strong id="tipoNombre"></strong>?
             </div>
             <div class="modal-footer">
-                <form method="post" th:action="@{/panel/superadmin/tipos-reportes/eliminar}">
+                <form method="post" id="formEliminar">
                     <input type="hidden" name="id" id="tipoIdEliminar">
                     <button type="submit" class="btn btn-danger">Sí, eliminar</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -195,12 +198,16 @@
         const id = button.getAttribute('data-id');
         const nombre = button.getAttribute('data-nombre');
         const icono = button.getAttribute('data-icono');
+        const esAviso = button.getAttribute('data-esaviso') === "true";
 
-        // Llena los campos del modal
         document.getElementById('editarId').value = id;
         document.getElementById('editarNombre').value = nombre;
         document.getElementById('nombreIcono').textContent = icono;
         document.getElementById('iconoActual').src = '/imagenes/' + icono;
+
+        // Ocultar institución y categoría si es aviso
+        document.getElementById('editarInstitucion').closest('.mb-3').style.display = esAviso ? 'none' : 'block';
+        document.getElementById('editarCategoria').closest('.mb-3').style.display = esAviso ? 'none' : 'block';
     });
 </script>
 
@@ -212,9 +219,13 @@
         const button = event.relatedTarget;
         const id = button.getAttribute('data-id');
         const nombre = button.getAttribute('data-nombre');
+        const esAviso = button.getAttribute('data-esaviso') === "true";
 
         document.getElementById('tipoIdEliminar').value = id;
         document.getElementById('tipoNombre').textContent = nombre;
+        document.getElementById('formEliminar').action = esAviso
+            ? '/panel/superadmin/tipos-reportes/eliminar'
+            : '/panel/superadmin/tipos-reportes/eliminar';
     });
 </script>
 
