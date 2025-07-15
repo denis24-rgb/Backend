@@ -19,6 +19,9 @@ public class AvisoComunitario {
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
+    @ManyToOne
+    @JoinColumn(name = "tipo_aviso_id") // Este será el nombre de la columna en la tabla
+    private TipoAvisoComunitario tipoAviso;
 
     private String descripcion;
 
