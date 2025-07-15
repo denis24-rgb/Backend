@@ -1,14 +1,13 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.configuraciones.RutaProperties;
 import com.reporte_ciudadano.backend.modelo.CategoriaReporte;
 import com.reporte_ciudadano.backend.modelo.InstitucionTipoReporte;
+import com.reporte_ciudadano.backend.modelo.TipoAvisoComunitario;
 import com.reporte_ciudadano.backend.modelo.TipoReporte;
 import com.reporte_ciudadano.backend.repositorio.InstitucionTipoReporteRepositorio;
 import com.reporte_ciudadano.backend.repositorio.TipoReporteRepositorio;
-import com.reporte_ciudadano.backend.servicio.CategoriaReporteServicio;
-import com.reporte_ciudadano.backend.servicio.InstitucionServicio;
-import com.reporte_ciudadano.backend.servicio.InstitucionTipoReporteServicio;
-import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
+import com.reporte_ciudadano.backend.servicio.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,6 +50,11 @@ public class TipoReporteControlador {
 
     @Value("${ruta.iconos}")
     private String rutaIconos;
+    @Autowired
+    private TipoAvisoComunitarioServicio tipoAvisoComunitarioServicio;
+
+    @Autowired
+    private RutaProperties rutaProperties;
 
     public TipoReporteControlador(TipoReporteServicio servicio) {
         this.servicio = servicio;
@@ -58,7 +62,20 @@ public class TipoReporteControlador {
 
     @GetMapping
     public String mostrarVista(Model model) {
-        model.addAttribute("tipos", tipoRepo.findAll());
+        List<TipoReporte> tipos = tipoRepo.findAll();
+        List<TipoAvisoComunitario> avisos = tipoAvisoComunitarioServicio.listarTodos();
+
+        // Convertir avisos a "TipoReporte simulado"
+        for (TipoAvisoComunitario aviso : avisos) {
+            TipoReporte tipoSimulado = new TipoReporte();
+            tipoSimulado.setId(-aviso.getId()); // ID negativo para diferenciarlos
+            tipoSimulado.setNombre(aviso.getNombre());
+            tipoSimulado.setIcono(aviso.getIcono());
+            tipoSimulado.setAsignaciones(List.of()); // sin asignaciones
+            tipos.add(tipoSimulado);
+        }
+
+        model.addAttribute("tipos", tipos); // ahora incluye reportes y avisos
         model.addAttribute("instituciones", institucionServicio.listarTodas());
         model.addAttribute("categorias", categoriaReporteServicio.listarTodas());
         return "panel/tipos_reportes";
@@ -77,29 +94,39 @@ public class TipoReporteControlador {
         }
 
         String nombreArchivo = System.currentTimeMillis() + "_" + archivo.getOriginalFilename();
-        Path rutaFinal = Paths.get(rutaIconos, nombreArchivo);
+        Path rutaFinal = Paths.get(rutaProperties.getIconos(), nombreArchivo);
         Files.copy(archivo.getInputStream(), rutaFinal, StandardCopyOption.REPLACE_EXISTING);
 
+        CategoriaReporte categoria = categoriaReporteServicio.obtenerPorId(categoriaId)
+                .orElseThrow(() -> new IllegalArgumentException("Categoría no válida."));
+
+        // Si la categoría contiene "aviso", lo guardamos en TipoAvisoComunitario
+        if (categoria.getNombre().toLowerCase().contains("aviso")) {
+            TipoAvisoComunitario nuevoAviso = new TipoAvisoComunitario();
+            nuevoAviso.setNombre(nombre);
+            nuevoAviso.setIcono(nombreArchivo);
+            tipoAvisoComunitarioServicio.guardar(nuevoAviso);
+
+            redirect.addFlashAttribute("mensajeExito", "Aviso comunitario creado correctamente.");
+            return "redirect:/panel/superadmin/tipos-reportes";
+        }
+
+        // Caso contrario, lo tratamos como TipoReporte
         TipoReporte nuevoTipo = new TipoReporte();
         nuevoTipo.setNombre(nombre);
         nuevoTipo.setIcono(nombreArchivo);
         tipoRepo.save(nuevoTipo);
 
-        CategoriaReporte categoria = categoriaReporteServicio.obtenerPorId(categoriaId)
-                .orElseThrow(() -> new IllegalArgumentException("Categoría no válida."));
-
-        if (!categoria.getNombre().toLowerCase().contains("aviso")) {
-            if (institucionId == null) {
-                redirect.addFlashAttribute("mensajeError", "Debes seleccionar una institución para esta categoría.");
-                return "redirect:/panel/superadmin/tipos-reportes";
-            }
-
-            InstitucionTipoReporte relacion = new InstitucionTipoReporte();
-            relacion.setTipoReporte(nuevoTipo);
-            relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
-            relacion.setCategoriaReporte(categoria);
-            institucionTipoReporteServicio.guardar(relacion);
+        if (institucionId == null) {
+            redirect.addFlashAttribute("mensajeError", "Debes seleccionar una institución para esta categoría.");
+            return "redirect:/panel/superadmin/tipos-reportes";
         }
+
+        InstitucionTipoReporte relacion = new InstitucionTipoReporte();
+        relacion.setTipoReporte(nuevoTipo);
+        relacion.setInstitucion(institucionServicio.obtenerPorId(institucionId).orElseThrow());
+        relacion.setCategoriaReporte(categoria);
+        institucionTipoReporteServicio.guardar(relacion);
 
         redirect.addFlashAttribute("mensajeExito", "Tipo de reporte creado correctamente.");
         return "redirect:/panel/superadmin/tipos-reportes";
@@ -108,34 +135,45 @@ public class TipoReporteControlador {
     @PostMapping("/eliminar")
     public String eliminarTipoReporte(@RequestParam("id") Long id, RedirectAttributes redirect) {
         try {
-            // Verificamos si hay reportes existentes con este tipo de reporte
-            boolean usadoEnReportes = tipoRepo.estaUsadoEnReportes(id); // método nuevo, te lo dejo abajo
+            // ✅ Si es un Aviso Comunitario (ID negativo)
+            if (id < 0) {
+                Long idAviso = Math.abs(id);
+                TipoAvisoComunitario aviso = tipoAvisoComunitarioServicio.buscarPorId(idAviso);
+                if (aviso != null) {
+                    Path rutaIcono = Paths.get(rutaIconos, aviso.getIcono());
+                    Files.deleteIfExists(rutaIcono);
+                    tipoAvisoComunitarioServicio.eliminarPorId(idAviso);
+                    redirect.addFlashAttribute("mensajeExito", "Aviso comunitario eliminado correctamente.");
+                } else {
+                    redirect.addFlashAttribute("mensajeError", "Aviso comunitario no encontrado.");
+                }
+                return "redirect:/panel/superadmin/tipos-reportes";
+            }
 
+            // ✅ Caso normal: TipoReporte
+            boolean usadoEnReportes = tipoRepo.estaUsadoEnReportes(id);
             if (usadoEnReportes) {
                 redirect.addFlashAttribute("mensajeError", "No se puede eliminar este tipo porque ya fue usado en uno o más reportes.");
                 return "redirect:/panel/superadmin/tipos-reportes";
             }
 
-            // Buscar el tipo para eliminar también el ícono del disco
             TipoReporte tipo = tipoRepo.findById(id).orElse(null);
             if (tipo != null) {
-                // Eliminar ícono del disco
                 Path rutaIcono = Paths.get(rutaIconos, tipo.getIcono());
                 Files.deleteIfExists(rutaIcono);
 
-                // Eliminar relaciones en institucion_tipo_reporte si existen
                 List<InstitucionTipoReporte> relaciones = institucionTipoReporteRepositorio.findByTipoReporteId(id);
                 if (!relaciones.isEmpty()) {
                     institucionTipoReporteRepositorio.deleteAll(relaciones);
                 }
 
-                // Finalmente eliminar el tipo
                 tipoRepo.deleteById(id);
             }
 
             redirect.addFlashAttribute("mensajeExito", "Tipo de reporte eliminado correctamente.");
         } catch (Exception e) {
             redirect.addFlashAttribute("mensajeError", "Ocurrió un error inesperado al intentar eliminar el tipo.");
+            e.printStackTrace();
         }
 
         return "redirect:/panel/superadmin/tipos-reportes";
@@ -145,12 +183,48 @@ public class TipoReporteControlador {
     public String editarTipoReporte(@RequestParam Long id,
                                     @RequestParam String nombre,
                                     @RequestParam(value = "icono", required = false) MultipartFile iconoFile,
-                                    @RequestParam Long institucionId,
-                                    @RequestParam Long categoriaId,
+                                    @RequestParam(required = false) Long institucionId,
+                                    @RequestParam(required = false) Long categoriaId,
                                     RedirectAttributes redirectAttributes) {
         try {
+            boolean esAviso = id < 0;
+            String nombreFinal = nombre;
+
+            if (esAviso) {
+                Long idAviso = Math.abs(id);
+                TipoAvisoComunitario aviso = tipoAvisoComunitarioServicio.buscarPorId(idAviso);
+                if (aviso == null) {
+                    redirectAttributes.addFlashAttribute("mensajeError", "Aviso comunitario no encontrado.");
+                    return "redirect:/panel/superadmin/tipos-reportes";
+                }
+
+                aviso.setNombre(nombreFinal);
+
+                if (iconoFile != null && !iconoFile.isEmpty()) {
+                    String anterior = aviso.getIcono();
+                    Path rutaAnterior = Paths.get(rutaIconos, anterior);
+                    Files.deleteIfExists(rutaAnterior);
+
+                    String nuevoNombre = iconoFile.getOriginalFilename();
+                    Path rutaDestino = Paths.get(rutaIconos, nuevoNombre);
+
+                    if (Files.exists(rutaDestino)) {
+                        nuevoNombre = System.currentTimeMillis() + "_" + nuevoNombre;
+                        rutaDestino = Paths.get(rutaIconos, nuevoNombre);
+                    }
+
+                    Files.copy(iconoFile.getInputStream(), rutaDestino, StandardCopyOption.REPLACE_EXISTING);
+                    aviso.setIcono(nuevoNombre);
+                }
+
+                tipoAvisoComunitarioServicio.guardar(aviso);
+                redirectAttributes.addFlashAttribute("mensajeExito", "Aviso comunitario editado correctamente.");
+                return "redirect:/panel/superadmin/tipos-reportes";
+            }
+
+            // Si no es aviso, seguimos con lógica normal de TipoReporte
             TipoReporte tipo = tipoRepo.findById(id).orElseThrow();
-            tipo.setNombre(nombre);
+            tipo.setNombre(nombreFinal);
 
             if (iconoFile != null && !iconoFile.isEmpty()) {
                 String iconoAnterior = tipo.getIcono();
@@ -182,7 +256,8 @@ public class TipoReporteControlador {
 
             redirectAttributes.addFlashAttribute("mensajeExito", "Tipo de reporte actualizado correctamente.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el tipo de reporte.");
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("mensajeError", "Error al actualizar el tipo.");
         }
 
         return "redirect:/panel/superadmin/tipos-reportes";
@@ -202,4 +277,5 @@ public class TipoReporteControlador {
     public List<TipoReporte> obtenerPorCategoria(@RequestParam Long categoria) {
         return servicio.listarPorCategoria(categoria);
     }
+
 }

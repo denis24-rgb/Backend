@@ -1,9 +1,8 @@
 package com.reporte_ciudadano.backend.servicio;
 
-import org.springframework.stereotype.Service;
-
 import com.reporte_ciudadano.backend.modelo.TipoAvisoComunitario;
 import com.reporte_ciudadano.backend.repositorio.TipoAvisoComunitarioRepositorio;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -26,5 +25,9 @@ public class TipoAvisoComunitarioServicio {
 
     public TipoAvisoComunitario buscarPorId(Long id) {
         return repositorio.findById(id).orElse(null);
+    }
+
+    public void eliminarPorId(Long id) {
+        repositorio.deleteById(id);
     }
 }
