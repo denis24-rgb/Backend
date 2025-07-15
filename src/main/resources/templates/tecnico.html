@@ -5,15 +5,25 @@
     <title>Panel del Técnico</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/tecnico.css}">
-</head>
-<body class="bg-light">
 
-<!-- Barra superior -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-    <div class="container-fluid">
-        <span class="navbar-brand">
-            <i class="bi bi-person-badge-fill me-2"></i> Panel Técnico
-        </span>
+    <!-- Estilo dinámico por color institucional -->
+    <style th:inline="css">
+        :root {
+            --color-primario: [[${colorInstitucion}]];
+        }
+    </style>
+</head>
+<body class="bg-light" th:attr="data-color-institucion=${colorInstitucion}">
+
+<!-- Barra superior con logo + nombre de institución -->
+<nav class="navbar navbar-expand-lg navbar-dark" th:style="'background-color:' + ${colorInstitucion}">
+    <div class="container-fluid d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <img th:src="@{'/imagenes/' + ${institucion.logo}}" alt="Logo" class="me-3" style="height: 40px;">
+            <span class="navbar-brand mb-0 h5">
+                <i class="bi bi-person-badge-fill me-2"></i> Panel Técnico - <span th:text="${institucion.nombre}">Nombre Institución</span>
+            </span>
+        </div>
         <div class="d-flex align-items-center text-white">
             <span class="me-3 fw-bold" th:text="${tecnico.nombre}">Nombre Técnico</span>
             <a href="/logout" class="btn btn-sm btn-outline-light">Cerrar sesión</a>
@@ -23,12 +33,12 @@
 
 <div class="container-fluid mt-4">
 
-    <!-- Filtros / Tarjetas resumen en una sola sección -->
+    <!-- Filtros / Tarjetas resumen -->
     <div class="row mb-3 g-3 justify-content-center">
         <div class="col-md-2 mx-1">
-            <button class="card text-white bg-primary shadow-sm w-100" onclick="filtrarPorEstado('recibido')">
+            <button class="card text-white shadow-sm w-100" th:style="'background-color:' + ${colorInstitucion}" onclick="filtrarPorEstado('recibido')">
                 <div class="card-body text-center">
-                    <h6>Pendientes</h6>
+                    <h6>Recibido</h6>
                     <p class="display-6" id="count-pendientes">0</p>
                 </div>
             </button>
@@ -53,32 +63,26 @@
             <button class="card text-white bg-secondary shadow-sm w-100" onclick="filtrarPorEstado('cerrado')">
                 <div class="card-body text-center">
                     <h6>Cerrados</h6>
+                    <p class="display-6" id="count-cerrado">0</p>
                 </div>
             </button>
         </div>
     </div>
 
     <div class="row">
-
-        <!-- Columna de reportes con scroll interno -->
+        <!-- Reportes -->
         <div class="col-md-4" id="contenedor-reportes" style="height: calc(100vh - 220px); overflow-y: auto;">
-            <!-- Aquí el JS insertará las tarjetas dinámicamente -->
+            <!-- Aquí se insertan tarjetas con JS -->
         </div>
-        <!-- Columna del mapa con tamaño controlado -->
+        <!-- Mapa -->
         <div class="col-md-8">
             <div class="border rounded shadow-sm p-2" style="height: calc(100vh - 220px);">
-            <div id="mapa" style="height: 100%;">[Aquí se cargará el mapa]</div>
+                <div id="mapa" style="height: 100%;">[Aquí se cargará el mapa]</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/js/tecnico-panel.js}"></script>
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1FjZtRLFk0h9dLAqUopMOi4FJn8t57s&callback=initMap">
-</script>
 <!-- Modal de imagen -->
 <div class="modal fade" id="modalImagen" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -91,6 +95,23 @@
         </div>
     </div>
 </div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/tecnico-panel.js}"></script>
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA_1FjZtRLFk0h9dLAqUopMOi4FJn8t57s&callback=initMap">
+</script>
+
+<!-- Script para aplicar el color institucional dinámico -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const color = document.body.getAttribute("data-color-institucion");
+        if (color) {
+            document.documentElement.style.setProperty('--color-primario', color);
+        }
+    });
+</script>
 
 </body>
 </html>

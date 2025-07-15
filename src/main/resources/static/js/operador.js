@@ -1,209 +1,307 @@
-// Mapa y marcadores
-let map;
-let markerCluster;
-let markers = [];
+let mapa;
+let todosLosMarcadores = [];
+let cluster; // Referencia del agrupador
+let tecnicoSeleccionado = { id: null, nombre: null, reporteId: null };
 
-// Inicializar mapa
 function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        center: { lat: -17.402354, lng: -63.881410 },
+    const centro = { lat: -17.402354, lng: -63.881410 };
+    mapa = new google.maps.Map(document.getElementById("map"), {
+        center: centro,
         zoom: 13,
         mapTypeId: "roadmap",
         gestureHandling: "greedy"
     });
 
-    cargarReportes();
+    cargarFiltros();
+    renderizarMarcadores(); // Mostrar todos los marcadores
 }
 
-// Cargar marcadores de reportes
-function cargarReportes() {
-    if (!reportes || reportes.length === 0) return;
+function renderizarMarcadores() {
+    guardarFiltrosEnLocalStorage();
 
-    // Limpiar marcadores anteriores si los hay
-    markers.forEach(m => m.setMap(null));
-    markers = [];
-    if (markerCluster) markerCluster.clearMarkers();
+    // Limpiar marcadores anteriores
+    todosLosMarcadores.forEach(m => m.setMap(null));
+    todosLosMarcadores = [];
 
-    // Filtrar reportes válidos
-    const reportesValidos = reportes.filter(r =>
-        r.latitud !== undefined && r.longitud !== undefined &&
-        !isNaN(parseFloat(r.latitud)) && !isNaN(parseFloat(r.longitud))
-    );
+    if (cluster) {
+        cluster.clearMarkers(); // Limpiar agrupador anterior
+    }
 
-    reportesValidos.forEach(reporte => {
-        const posicion = { lat: parseFloat(reporte.latitud), lng: parseFloat(reporte.longitud) };
+    const tiposSeleccionados = obtenerFiltros("tipo");
+    const estadosSeleccionados = obtenerFiltros("estado");
+
+    const filtrados = reportes.filter(r => {
+        if (!r.ubicacion || !r.ubicacion.includes(",")) return false;
+
+        const partes = r.ubicacion.split(",").map(p => parseFloat(p.trim()));
+        const ubicacionValida = partes.length === 2 && !isNaN(partes[0]) && !isNaN(partes[1]);
+
+        const tipoValido = tiposSeleccionados.length === 0 || tiposSeleccionados.includes(r.tipoReporte?.nombre);
+        const estadoValido = estadosSeleccionados.length === 0 || estadosSeleccionados.includes(r.estado?.nombre);
+
+        return ubicacionValida && tipoValido && estadoValido;
+    });
+
+    // Actualizar contador
+    const contador = document.getElementById("contadorReportes");
+    const textoContador = document.getElementById("textoContador");
+    if (contador && textoContador) {
+        textoContador.textContent = `Mostrando ${filtrados.length} reportes`;
+        contador.classList.remove("visually-hidden");
+    }
+
+    // Crear nuevos marcadores
+    filtrados.forEach(reporte => {
+        const partes = reporte.ubicacion.split(",").map(p => parseFloat(p.trim()));
+        const posicion = { lat: partes[0], lng: partes[1] };
 
         const icono = reporte.tipoReporte?.icono
-            ? `/imagenes/iconos/${reporte.tipoReporte.icono}`
+            ? `/imagenes/${reporte.tipoReporte.icono}`
             : "/imagenes/icono-default.png";
 
-        const marker = new google.maps.Marker({
+        const marcador = new google.maps.Marker({
             position: posicion,
+            title: reporte.tipoReporte?.nombre || "Reporte",
             icon: {
                 url: icono,
                 scaledSize: new google.maps.Size(40, 40)
             },
-            title: reporte.tipoReporte?.nombre || "Reporte"
+            animation: google.maps.Animation.DROP
         });
 
-        marker.reporte = reporte;
-        marker.addListener("click", () => mostrarDetalleReporte(reporte));
-        markers.push(marker);
+        marcador.reporte = reporte;
+        marcador.addListener("click", () => mostrarDetalleReporte(reporte));
+        todosLosMarcadores.push(marcador);
     });
 
-    markerCluster = new MarkerClusterer(map, markers, {
+    // Cluster
+    cluster = new MarkerClusterer(mapa, todosLosMarcadores, {
         imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m"
     });
+
+    // Cambiar color del botón de filtros si hay filtros activos
+    const btnFiltro = document.getElementById("btnMostrarFiltro");
+    const hayFiltros = tiposSeleccionados.length > 0 || estadosSeleccionados.length > 0;
+    if (btnFiltro) {
+        btnFiltro.classList.toggle("filtro-activo", hayFiltros);
+    }
 }
 
-// Mostrar detalle en modal
-function mostrarDetalleReporte(reporte) {
-    const contenido = `
-        <h6><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || "No especificado"}</h6>
-        <h6><strong>Descripción:</strong> ${reporte.descripcion || "Sin descripción"}</h6>
-        <h6><strong>Estado:</strong> ${reporte.estado || "Sin estado"}</h6>
-        <h6><strong>Ubicación:</strong> ${reporte.latitud}, ${reporte.longitud}</h6>
-    `;
-
-    document.getElementById("contenidoModal").innerHTML = contenido;
-    new bootstrap.Modal(document.getElementById("modalDetalleReporte")).show();
-}
-
-// Mostrar/Ocultar filtro
-function mostrarFiltro() {
-    document.getElementById("filtroFlotante").style.display = "block";
-    document.getElementById("btnMostrarFiltro").style.display = "none";
-}
-
-function ocultarFiltro() {
-    document.getElementById("filtroFlotante").style.display = "none";
-    document.getElementById("btnMostrarFiltro").style.display = "block";
-}
-
-// Mostrar todos los reportes
-function mostrarTodosReportes() {
-    cargarReportes();
-}
-
-// Cargar filtros dinámicamente
-window.addEventListener("DOMContentLoaded", () => {
-    cargarFiltros();
-    cargarAsignaciones();
-    verificarNuevosReportes();
-});
 
 function cargarFiltros() {
-    const contenedorTipos = document.getElementById("filtroTipos");
-    const contenedorEstados = document.getElementById("filtroEstados");
-
     const tiposUnicos = [...new Set(reportes.map(r => r.tipoReporte?.nombre).filter(Boolean))];
-    const estadosUnicos = [...new Set(reportes.map(r => r.estado).filter(Boolean))];
+    const estadosUnicos = [...new Set(reportes.map(r => r.estado?.nombre).filter(Boolean))];
+
+    const tiposGuardados = JSON.parse(localStorage.getItem("filtrosTipoAdmin") || "[]");
+    const estadosGuardados = JSON.parse(localStorage.getItem("filtrosEstadoAdmin") || "[]");
+
+    const contTipos = document.getElementById("filtroTipos");
+    const contEstados = document.getElementById("filtroEstados");
+
+    contTipos.innerHTML = "";
+    contEstados.innerHTML = "";
 
     tiposUnicos.forEach(tipo => {
-        const btn = document.createElement("button");
-        btn.className = "btn btn-outline-primary btn-sm";
-        btn.textContent = tipo;
-        btn.onclick = () => filtrarPorTipo(tipo);
-        contenedorTipos.appendChild(btn);
+        const checked = tiposGuardados.includes(tipo) ? "checked" : "";
+        contTipos.innerHTML += `
+            <label class="me-2"><input type="checkbox" class="filtro-tipo me-1" value="${tipo}" onchange="renderizarMarcadores()" ${checked}> ${tipo}</label>
+        `;
     });
 
     estadosUnicos.forEach(estado => {
-        const btn = document.createElement("button");
-        btn.className = "btn btn-outline-secondary btn-sm";
-        btn.textContent = estado;
-        btn.onclick = () => filtrarPorEstado(estado);
-        contenedorEstados.appendChild(btn);
+        const checked = estadosGuardados.includes(estado) ? "checked" : "";
+        contEstados.innerHTML += `
+            <label class="me-2"><input type="checkbox" class="filtro-estado me-1" value="${estado}" onchange="renderizarMarcadores()" ${checked}> ${estado}</label>
+        `;
     });
 }
 
-function filtrarPorTipo(tipoSeleccionado) {
-    markers.forEach(m => m.setMap(null));
-
-    const filtrados = markers.filter(m =>
-        m.reporte.tipoReporte?.nombre.toLowerCase() === tipoSeleccionado.toLowerCase()
-    );
-
-    filtrados.forEach(m => m.setMap(map));
-
-    if (markerCluster) markerCluster.clearMarkers();
-    markerCluster = new MarkerClusterer(map, filtrados, {
-        imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m"
-    });
+function obtenerFiltros(tipo) {
+    const clase = tipo === "tipo" ? "filtro-tipo" : "filtro-estado";
+    return Array.from(document.querySelectorAll(`.${clase}:checked`)).map(e => e.value);
 }
 
-function filtrarPorEstado(estadoSeleccionado) {
-    markers.forEach(m => m.setMap(null));
+function mostrarDetalleReporte(reporte) {
+    const modalBody = document.getElementById('contenidoModal');
 
-    const filtrados = markers.filter(m =>
-        m.reporte.estado?.toLowerCase() === estadoSeleccionado.toLowerCase()
-    );
+    let contenido = `
+        <h6><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || "No especificado"}</h6>
+        <h6><strong>Descripción:</strong> ${reporte.descripcion || "Sin descripción"}</h6>
+        <h6><strong>Estado:</strong> ${reporte.estado?.nombre || "Sin estado"}</h6>
+        <h6><strong>Fecha:</strong> ${reporte.fechaReporte || "Sin fecha"}</h6>
+    `;
 
-    filtrados.forEach(m => m.setMap(map));
+    const tecnicoAsignado = reporte.tecnico && reporte.tecnico.nombre;
 
-    if (markerCluster) markerCluster.clearMarkers();
-    markerCluster = new MarkerClusterer(map, filtrados, {
-        imagePath: "https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m"
-    });
-}
+    if (!tecnicoAsignado) {
+        const tecnicosDisponibles = window.listaTecnicos || [];
 
-// Cargar tabla de asignaciones
-function cargarAsignaciones() {
-    const tabla = document.getElementById("tablaAsignaciones");
-    tabla.innerHTML = "";
+        const selector = `
+            <label class="mt-3"><strong>Técnico:</strong></label>
+            <select id="tecnicoSelect-${reporte.id}" class="form-select mt-1"
+                    onchange="confirmarAsignacionTecnico(${reporte.id}, this)">
+                <option disabled selected>Seleccionar técnico...</option>
+                ${tecnicosDisponibles.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('')}
+            </select>
+        `;
+        contenido += selector;
+    }else {
+        contenido += `
+    <div class="mt-3">
+        <h6><i class="bi bi-person-check-fill text-success me-2"></i><strong>Técnico:</strong> ${reporte.tecnico.nombre}</h6>
+    </div>
+`;
 
-    if (!window.asignaciones || asignaciones.length === 0) {
-        tabla.innerHTML = "<tr><td colspan='4' class='text-center'>Sin asignaciones recientes.</td></tr>";
-        return;
     }
 
-    asignaciones.forEach(asig => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-            <td>${asig.reporteDescripcion}</td>
-            <td>${asig.tecnicoNombre}</td>
-            <td>${asig.estado}</td>
-            <td>
-                <button class="btn btn-sm btn-success" onclick="confirmarAsignacion('${asig.tecnicoNombre}', ${asig.reporteId})">
-                    <i class="bi bi-check-circle"></i> Confirmar
-                </button>
-            </td>
-        `;
-
-        tabla.appendChild(tr);
-    });
+    modalBody.innerHTML = contenido;
 }
 
-// Confirmar asignación (modal)
-function confirmarAsignacion(nombreTecnico, idReporte) {
+function mostrarSelectorTecnico(reporteId) {
+    const container = document.getElementById('selectorTecnicoContainer');
+
+    // Simulación: obtén la lista de técnicos desde una variable o fetch real
+    const tecnicosDisponibles = window.listaTecnicos || []; // Define esta variable global al cargar la vista
+
+    let selector = `
+        <select id="tecnicoSelect" class="form-select mb-2">
+            <option disabled selected>Seleccionar técnico...</option>
+            ${tecnicosDisponibles.map(t => `<option value="${t.id}">${t.nombre}</option>`).join('')}
+        </select>
+        <button class="btn btn-success btn-sm" onclick="asignarTecnico(${reporteId})">
+             Confirmar Asignación
+        </button>
+    `;
+
+    container.innerHTML = selector;
+    container.style.display = 'block';
+}
+function asignarTecnico(reporteId) {
+    const tecnicoId = document.getElementById('tecnicoSelect').value;
+
+    fetch(`/reportes/asignar/${reporteId}?tecnicoId=${tecnicoId}`, {
+        method: 'POST'
+    })
+        .then(res => {
+            if (res.ok) {
+                alert(' Técnico asignado correctamente');
+                location.reload(); // o actualizar la tarjeta si prefieres sin recargar
+            } else {
+                alert(' Error al asignar técnico');
+            }
+        })
+        .catch(() => alert('Error de conexión'));
+}
+function confirmarAsignacionTecnico(reporteId, selectElement) {
+    const tecnicoId = selectElement.value;
+    const nombreTecnico = selectElement.options[selectElement.selectedIndex].text;
+
+    // Guardamos temporalmente
+    tecnicoSeleccionado = { id: tecnicoId, nombre: nombreTecnico, reporteId };
+
+    // Mostramos nombre del técnico en el modal
     document.getElementById("nombreTecnicoModal").textContent = nombreTecnico;
 
+    // Mostramos el modal
+    const modal = new bootstrap.Modal(document.getElementById("modalConfirmarAsignacion"));
+    modal.show();
+}
+document.addEventListener("DOMContentLoaded", () => {
     const btnConfirmar = document.getElementById("btnConfirmarAsignacion");
-    btnConfirmar.onclick = () => {
-        console.log(`Asignado el reporte ${idReporte} a ${nombreTecnico}`);
-        const modal = bootstrap.Modal.getInstance(document.getElementById("modalConfirmarAsignacion"));
-        modal.hide();
-        // Aquí va tu fetch al backend real para guardar la asignación
-    };
 
-    new bootstrap.Modal(document.getElementById("modalConfirmarAsignacion")).show();
-}
+    if (btnConfirmar) {
+        btnConfirmar.addEventListener("click", () => {
+            const { reporteId, id: tecnicoId, nombre: nombreTecnico } = tecnicoSeleccionado;
 
-// Alerta de nuevos reportes
-function verificarNuevosReportes() {
-    const alerta = document.getElementById("alertaNuevosReportes");
-    if (!alerta) return;
+            fetch(`/reportes/asignar/${reporteId}?tecnicoId=${tecnicoId}`, {
+                method: 'POST'
+            })
+                .then(res => res.ok ? res.json() : Promise.reject())
+                .then(reporteActualizado => {
+                    // Ocultar modal de confirmación
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("modalConfirmarAsignacion"));
+                    modal.hide();
 
-    const hayPendientes = Array.isArray(reportes) && reportes.some(r => r.estado && r.estado.toLowerCase() === "recibido");
+                    // Actualizar contenido del modal de detalles
+                    const modalBody = document.getElementById('contenidoModal');
+                    modalBody.innerHTML += `
+                    <div class="alert alert-success mt-3"> Técnico asignado correctamente.</div>
+                    <div class="mt-3"><strong>Técnico:</strong> ${nombreTecnico}</div>
+                `;
 
-    if (hayPendientes) {
-        alerta.style.display = "block";
-        alerta.classList.remove("d-none");
-    } else {
-        alerta.style.display = "none";
-        alerta.classList.add("d-none");
+                    // Actualizar el objeto en memoria
+                    const marcador = todosLosMarcadores.find(m => m.reporte.id === reporteId);
+                    if (marcador) {
+                        marcador.reporte.tecnico = { id: tecnicoId, nombre: nombreTecnico };
+                    }
+                })
+                .catch(() => {
+                    alert(' Error al asignar técnico');
+                });
+        });
     }
+});
+
+function reiniciarFiltros() {
+    document.querySelectorAll("#filtroTipos input, #filtroEstados input").forEach(c => c.checked = false);
+    renderizarMarcadores();
 }
 
+window.addEventListener("load", initMap);
+function mostrarFiltro() {
+    document.getElementById('filtroFlotante').style.display = 'block';
+    document.getElementById('btnMostrarFiltro').style.display = 'none';
+}
 
+function ocultarFiltro() {
+    document.getElementById('filtroFlotante').style.display = 'none';
+    document.getElementById('btnMostrarFiltro').style.display = 'block';
+}
+function mostrarTodosReportes() {
+    // Limpiar filtros visuales
+    document.querySelectorAll("#filtroTipos input, #filtroEstados input").forEach(c => c.checked = false);
 
+    // Limpiar localStorage
+    localStorage.removeItem("filtrosTipoAdmin");
+    localStorage.removeItem("filtrosEstadoAdmin");
+
+    renderizarMarcadores();
+}
+
+function guardarFiltrosEnLocalStorage() {
+    const tipos = obtenerFiltros("tipo");
+    const estados = obtenerFiltros("estado");
+    localStorage.setItem("filtrosTipoAdmin", JSON.stringify(tipos));
+    localStorage.setItem("filtrosEstadoAdmin", JSON.stringify(estados));
+}
+
+let infoWindow;
+
+function mostrarDetalleReporte(reporte) {
+    if (infoWindow) {
+        infoWindow.close();
+    }
+
+    const contenido = `
+        <div style="min-width: 200px;">
+            <h6><strong>Tipo:</strong> ${reporte.tipoReporte?.nombre || "No especificado"}</h6>
+            <h6><strong>Descripción:</strong> ${reporte.descripcion || "Sin descripción"}</h6>
+            <h6><strong>Estado:</strong> ${reporte.estado?.nombre || "Sin estado"}</h6>
+            <h6><strong>Fecha:</strong> ${reporte.fechaReporte || "Sin fecha"}</h6>
+            ${reporte.tecnico
+        ? `<div class="mt-2 text-success"><strong><i class="bi bi-person-check-fill me-1"></i>Técnico:</strong> ${reporte.tecnico.nombre}</div>`
+        : `<div class="mt-2 text-warning"><em>Sin técnico asignado</em></div>`
+    }
+        </div>
+    `;
+
+    const partes = reporte.ubicacion.split(",").map(p => parseFloat(p.trim()));
+    const posicion = { lat: partes[0], lng: partes[1] };
+
+    infoWindow = new google.maps.InfoWindow({
+        content: contenido,
+        position: posicion
+    });
+
+    infoWindow.open(mapa);
+}

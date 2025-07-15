@@ -32,7 +32,7 @@ public class EvidenciaControlador {
     private final EvidenciaServicio servicio;
 
     @Autowired
-    private RutaProperties ruta; // ✅ Ruta dinámica
+    private RutaProperties ruta; //  Ruta dinámica
 
     @Autowired
     private EvidenciaRepositorio evidenciaRepositorio;

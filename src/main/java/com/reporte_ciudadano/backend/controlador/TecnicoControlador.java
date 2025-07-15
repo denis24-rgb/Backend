@@ -1,10 +1,8 @@
 package com.reporte_ciudadano.backend.controlador;
 
+import com.reporte_ciudadano.backend.configuraciones.RutaProperties;
 import com.reporte_ciudadano.backend.dto.ActualizacionTecnico;
-import com.reporte_ciudadano.backend.modelo.AsignacionTecnico;
-import com.reporte_ciudadano.backend.modelo.Evidencia;
-import com.reporte_ciudadano.backend.modelo.Reporte;
-import com.reporte_ciudadano.backend.modelo.UsuarioInstitucional;
+import com.reporte_ciudadano.backend.modelo.*;
 import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
 import com.reporte_ciudadano.backend.servicio.EvidenciaServicio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
@@ -28,7 +26,8 @@ public class TecnicoControlador {
     private final UsuarioInstitucionalServicio usuarioServicio;
     private final EvidenciaServicio evidenciaServicio;
 
-
+    @Autowired
+    private RutaProperties ruta; //  Ruta dinámica
     @Autowired
     private AsignacionTecnicoServicio asignacionTecnicoServicio;
 
@@ -68,12 +67,22 @@ public class TecnicoControlador {
         long totalPendientes = asignacionTecnicoServicio.contarPendientes(tecnicoId);
         long totalProceso = asignacionTecnicoServicio.contarEnProceso(tecnicoId);
         long totalFinalizado = asignacionTecnicoServicio.contarResueltos(tecnicoId);
+
+        //  Color e Institución
+        Institucion institucion = tecnico.getInstitucion();
+        String color = institucion.getColorPrimario();
+        if (color == null || color.isEmpty()) {
+            color = "#0d6efd";
+        }
+
         model.addAttribute("tecnico", tecnico);
         model.addAttribute("reportes", reportesMap);
         model.addAttribute("estadoSeleccionado", estado);
         model.addAttribute("totalPendientes", totalPendientes);
         model.addAttribute("totalProceso", totalProceso);
         model.addAttribute("totalFinalizado", totalFinalizado);
+        model.addAttribute("colorInstitucion", color);
+        model.addAttribute("institucion", institucion); // para logo y nombre
 
         return "tecnico";
     }
@@ -108,9 +117,18 @@ public class TecnicoControlador {
             String nombreImagen = null;
 
             if (imagenTrabajo != null && !imagenTrabajo.isEmpty()) {
-                String nombreUnico = UUID.randomUUID() + "_" + imagenTrabajo.getOriginalFilename();
-                String rutaCarpeta = "/opt/reporte_ciudadano/imagenes-trabajos/";// O la carpeta que uses en tu servidor
-                imagenTrabajo.transferTo(new java.io.File(rutaCarpeta + nombreUnico));
+                String originalFilename = imagenTrabajo.getOriginalFilename();
+                String nombreUnico = UUID.randomUUID() + "_" + originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+
+                //  Ruta dinámica usando application.properties o application-prod.properties
+                String rutaCarpeta = ruta.getTrabajos();
+
+                java.io.File directorio = new java.io.File(rutaCarpeta);
+                if (!directorio.exists()) {
+                    directorio.mkdirs(); // Crea el directorio si no existe
+                }
+
+                imagenTrabajo.transferTo(new java.io.File(rutaCarpeta + java.io.File.separator + nombreUnico));
                 nombreImagen = nombreUnico;
             }
 
@@ -165,6 +183,7 @@ public class TecnicoControlador {
         conteos.put("recibido", asignacionTecnicoServicio.contarPendientes(tecnicoId));
         conteos.put("en proceso", asignacionTecnicoServicio.contarEnProceso(tecnicoId));
         conteos.put("resuelto", asignacionTecnicoServicio.contarResueltos(tecnicoId));
+        conteos.put("cerrado", asignacionTecnicoServicio.contarCerrados(tecnicoId));
 
         return conteos;
     }

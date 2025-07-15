@@ -108,18 +108,36 @@ public class TipoReporteControlador {
     @PostMapping("/eliminar")
     public String eliminarTipoReporte(@RequestParam("id") Long id, RedirectAttributes redirect) {
         try {
-            TipoReporte tipo = tipoRepo.findById(id).orElse(null);
+            // Verificamos si hay reportes existentes con este tipo de reporte
+            boolean usadoEnReportes = tipoRepo.estaUsadoEnReportes(id); // método nuevo, te lo dejo abajo
 
-            if (tipo != null) {
-                Path rutaIcono = Paths.get(rutaIconos, tipo.getIcono());
-                Files.deleteIfExists(rutaIcono);
+            if (usadoEnReportes) {
+                redirect.addFlashAttribute("mensajeError", "No se puede eliminar este tipo porque ya fue usado en uno o más reportes.");
+                return "redirect:/panel/superadmin/tipos-reportes";
             }
 
-            tipoRepo.deleteById(id);
+            // Buscar el tipo para eliminar también el ícono del disco
+            TipoReporte tipo = tipoRepo.findById(id).orElse(null);
+            if (tipo != null) {
+                // Eliminar ícono del disco
+                Path rutaIcono = Paths.get(rutaIconos, tipo.getIcono());
+                Files.deleteIfExists(rutaIcono);
+
+                // Eliminar relaciones en institucion_tipo_reporte si existen
+                List<InstitucionTipoReporte> relaciones = institucionTipoReporteRepositorio.findByTipoReporteId(id);
+                if (!relaciones.isEmpty()) {
+                    institucionTipoReporteRepositorio.deleteAll(relaciones);
+                }
+
+                // Finalmente eliminar el tipo
+                tipoRepo.deleteById(id);
+            }
+
             redirect.addFlashAttribute("mensajeExito", "Tipo de reporte eliminado correctamente.");
         } catch (Exception e) {
-            redirect.addFlashAttribute("mensajeError", "No se puede eliminar este tipo porque ya fue usado en uno o más reportes.");
+            redirect.addFlashAttribute("mensajeError", "Ocurrió un error inesperado al intentar eliminar el tipo.");
         }
+
         return "redirect:/panel/superadmin/tipos-reportes";
     }
 

@@ -70,6 +70,20 @@ public class ReporteWebControlador {
         var tipos = tipoReporteServicio.listarTodos();
         model.addAttribute("tipos", tipos);
 
+        String color = "#2B2D30FF"; // color por defecto
+
+        if (usuario.getInstitucion() != null && usuario.getInstitucion().getColorPrimario() != null && !usuario.getInstitucion().getColorPrimario().isEmpty()) {
+            color = usuario.getInstitucion().getColorPrimario();
+        }
+
+        model.addAttribute("colorInstitucion", color);
+
+        String nombreInstitucion = (usuario.getInstitucion() != null)
+                ? usuario.getInstitucion().getNombre()
+                : "Superadministrador";
+
+        model.addAttribute("nombreInstitucion", nombreInstitucion);
+
 
         return "reportes";
     }

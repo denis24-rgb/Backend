@@ -1,56 +1,53 @@
-/* 🌐 Fondo general y tipografía */
-body {
-    background-color: #f1f3f6;
-    font-family: 'Segoe UI', sans-serif;
-    color: #212529;
+/* Fondo general y tipografía */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-primario);
+    opacity: 0.2; /* Fondo al 20% */
+    z-index: -1;
+    pointer-events: none;
 }
 
-/* 📦 Contenedor principal */
-.card.shadow {
-    border: none;
-    border-radius: 1rem;
-    overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+
+/* Contenedor principal */
+.card.shadow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-primario);
+    opacity: 0.4; /* Card al 40% */
+    z-index: 0;
+    pointer-events: none;
 }
 
-/* 🔵 Encabezado */
+
+/* Encabezado con color institucional */
 .card-header.bg-primary {
-    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    background: linear-gradient(90deg, var(--color-primario), var(--color-primario));
     padding: 1.5rem;
     font-size: 1.4rem;
     font-weight: bold;
     color: #fff;
 }
 
-/* ➕ Botón nuevo reporte */
-.card-header .btn {
-    background-color: #ffffff;
-    color: #0d6efd;
-    border: none;
-    font-weight: bold;
-    padding: 0.5rem 1.2rem;
-    border-radius: 0.75rem;
-    transition: all 0.3s ease-in-out;
-}
-
 .card-header .btn:hover {
     background-color: #e2e6ea;
 }
 
-/* 🎯 Sección de filtros */
+/* Sección de filtros */
 .card-title {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #0d6efd;
+    color: var(--color-primario);
 }
 
 #formFiltros label {
     font-weight: 600;
-    color: #0d6efd;
+    color: #000000;
 }
 
-/* 🎛️ Selects */
+/* Selects */
 #formFiltros select.form-select {
     border: 1.8px solid #ced4da;
     border-radius: 0.75rem;
@@ -60,11 +57,11 @@ body {
 }
 
 #formFiltros select.form-select:focus {
-    border-color: #0d6efd;
+    border-color: var(--color-primario);
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-/* 🧹 Botón limpiar */
+/* Botón limpiar */
 #formFiltros .btn-outline-secondary {
     border-radius: 0.75rem;
     font-weight: bold;
@@ -76,13 +73,24 @@ body {
     color: #000;
 }
 
-/* 🧩 Tarjetas de reporte */
 .tarjeta-reporte {
+    position: relative;
     border-radius: 1rem;
-    transition: all 0.3s ease-in-out;
-    background-color: #ffffff;
-    border: 1px solid #dee2e6;
+    overflow: hidden;
+    border: 1px solid var(--color-primario);
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Fondo con opacidad institucional SIN bloquear clics */
+.tarjeta-reporte::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: var(--color-primario);
+    opacity: 0.05;
+    pointer-events: none; /* permite hacer clic a través del fondo */
+    z-index: 0;
 }
 
 .tarjeta-reporte:hover {
@@ -90,12 +98,13 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* 🖼️ Imagen miniatura dentro de la tarjeta */
+/* Imagen miniatura dentro de la tarjeta */
 .tarjeta-reporte img.img-thumbnail {
     border-radius: 0.5rem;
     border: 2px solid #dee2e6;
 }
 
+/* Imagen desde botón de evidencia */
 .tarjeta-reporte .btn-evidencia img.img-thumbnail {
     width: 100px;
     height: auto;
@@ -104,18 +113,18 @@ body {
     border: 2px solid #dee2e6;
 }
 
-/* Hover solo en imágenes sueltas */
+/* Hover sobre imágenes sueltas */
 .tarjeta-reporte > img.img-thumbnail:hover {
     transform: scale(1.05);
     transition: transform 0.2s ease-in-out;
 }
 
-/* Evitar parpadeo en imágenes dentro de botones */
+/* Evitar efecto en imágenes dentro de botones */
 .btn-evidencia img:hover {
-    transform: none;
+    transform: none !important;
 }
 
-/* 📍 Estado */
+/* Estado */
 .estado-reporte {
     font-weight: bold;
     text-transform: capitalize;
@@ -127,30 +136,30 @@ body {
     font-size: 0.9rem;
 }
 
-/* 👷 Técnico badge */
+/* Técnico badge */
 .badge.bg-success {
     font-size: 0.85rem;
     padding: 0.3em 0.7em;
     border-radius: 1rem;
 }
 
-/* 🧾 Formularios */
+/* Formularios */
 .input-group-sm select.form-select {
     font-size: 0.85rem;
 }
 
-/* ❌ Modal eliminar */
+/* Modal eliminar */
 .modal-content.border-danger {
     border-width: 3px !important;
 }
 
-/* 🗺️ Modal mapa */
+/* Modal mapa */
 #mapaIndividual {
     border-radius: 1rem;
     overflow: hidden;
 }
 
-/* 🕹️ Botones en tarjetas */
+/*  Botones en tarjetas */
 .tarjeta-reporte .btn {
     font-size: 0.85rem;
     border-radius: 0.5rem;
@@ -161,7 +170,7 @@ body {
     transform: scale(1.02);
 }
 
-/* 📱 Responsive mejora */
+/* Responsive mejora */
 @media (max-width: 768px) {
     .card-header {
         flex-direction: column;
@@ -169,16 +178,15 @@ body {
         gap: 1rem;
     }
 }
-
-/* 🌑 SOLO modales de evidencias tienen fondo oscuro y zoom */
+/*  SOLO modales de evidencias tienen fondo oscuro y zoom */
 .modal-evidencia .modal-content {
-    background-color: #1c1c1c;
+    background-color: var(--color-primario);
     color: #fff;
 }
 
 .modal-evidencia .modal-header {
     background-color: #343a40;
-    border-bottom: 1px solid #495057;
+    border-bottom: 1px solid var(--color-primario);
 }
 
 .modal-evidencia .modal-body {
@@ -201,4 +209,8 @@ body {
     user-select: none;
     display: block;
     margin: auto;
+}
+.card.border-primary {
+    border-color: var(--color-primario) !important; /* O reemplaza con otro color */
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* si usas focus ring */
 }

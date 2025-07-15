@@ -14,4 +14,5 @@ public class RutaProperties {
     private String iconos;
     private String trabajos;
     private String avisos;
+    private String iconosInstituciones;
 }

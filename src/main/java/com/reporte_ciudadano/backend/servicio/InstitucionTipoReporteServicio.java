@@ -32,8 +32,8 @@ public class InstitucionTipoReporteServicio {
         return repo.findByCategoriaReporteId(categoriaId);
     }
     public InstitucionTipoReporte buscarPorTipoReporteId(Long tipoReporteId) {
-        return repo.findByTipoReporteId(tipoReporteId).orElse(null);
+        List<InstitucionTipoReporte> lista = repo.findByTipoReporteId(tipoReporteId);
+        return lista.isEmpty() ? null : lista.get(0);
     }
-
 
 }

@@ -1,187 +1,143 @@
-body {
-    background-color: #f0f2f5;
-    font-family: 'Segoe UI', sans-serif;
-    color: #212529;
-    margin: 0;
+:root {
+    --color-primario: #2b2d30; /* fallback si no se sobreescribe por Thymeleaf */
 }
 
-/* 📦 Tarjetas */
-.card {
+/* Estilo general */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-primario);
+    opacity: 0.2; /* Fondo al 20% */
+    z-index: -1;
+    pointer-events: none;
+}
+
+/* Tarjetas de usuario */
+.card.shadow-sm {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #e0e0e0;
     border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    border: none;
     background-color: #fff;
 }
 
-.card-header h3 {
-    font-weight: 600;
-    margin: 0;
+.card.shadow-sm:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* 📋 Contenedor de tabla para scroll horizontal en pantallas pequeñas */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-top: 20px;
-    background-color: white;
+/* Icono de usuario (SVG) */
+.bi-person-circle {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+    padding: 5px;
+}
+
+/* Texto dentro de la tarjeta */
+.card h5 {
+    font-weight: 600;
+    color: #212529;
+}
+
+.card small {
+    font-size: 0.9rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.card small svg {
+    margin-right: 5px;
+}
+
+.card .badge {
+    font-size: 0.75rem;
+    padding: 6px 12px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    padding: 10px;
 }
 
-/* 📊 Tablas */
-.table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 768px;
+/* Botones dentro de tarjetas */
+.card .btn-outline-primary,
+.card .btn-outline-danger {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
 }
 
-.table th,
-.table td {
-    vertical-align: middle !important;
-    padding: 14px;
-    font-size: 15px;
-    border-bottom: 1px solid #e9ecef;
-    white-space: nowrap;
+.card .btn-outline-primary:hover {
+    background-color: var(--color-primario);
+    color: white;
 }
 
-.table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
+.card .btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
 }
 
-.table-hover tbody tr:hover {
-    background-color: #e6f0ff;
-    cursor: pointer;
-}
-
-/* 🔘 Botones */
-.btn {
-    border-radius: 8px;
-    font-weight: 500;
-    transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
-}
-
-.btn:hover {
-    transform: scale(1.02);
-}
-
+/* Botón principal */
 .btn-primary {
-    background-color: #0d6efd;
+    background-color: var(--color-primario) !important;
     border: none;
 }
 
 .btn-primary:hover {
-    background-color: #0b5ed7;
+    background-color: #1a4ed8 !important;
 }
 
-.btn-success {
-    background-color: #198754;
-    border: none;
+/* Encabezado de la tarjeta principal */
+.card-header {
+    background-color: var(--color-primario) !important;
+    color: white !important;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
-.btn-success:hover {
-    background-color: #157347;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-    border: none;
-}
-
-.btn-danger:hover {
-    background-color: #bb2d3b;
-}
-
-.btn-warning {
-    background-color: #ffc107;
-    border: none;
-    color: #212529;
-}
-
-.btn-warning:hover {
-    background-color: #e0a800;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    border: none;
-}
-
-.btn-secondary:hover {
-    background-color: #5c636a;
-}
-
-/* ⚠️ Alertas */
-.alert {
-    margin-top: 15px;
-    font-weight: 500;
-    border-radius: 8px;
-    padding: 12px;
-}
-
-/* 📋 Formularios y Modales */
+/* Modal centrado y elegante */
 .modal-content {
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
-.modal-header h5 {
-    font-weight: bold;
-    margin: 0;
+.modal-header.bg-success,
+.modal-header.bg-primary,
+.modal-header.bg-danger {
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
 }
 
-.form-label {
-    font-weight: 500;
-    margin-bottom: 6px;
-}
-
-.form-control,
-.form-select {
+/* Campo de búsqueda */
+#inputBusqueda {
+    width: 250px;
     border-radius: 8px;
-    font-size: 14px;
-    transition: border-color 0.2s;
 }
 
-.form-control:focus,
-.form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.25);
+#inputBusqueda:focus {
+    border-color: var(--color-primario);
+    box-shadow: 0 0 0 0.2rem rgba(46, 105, 255, 0.25);
 }
 
-.form-check-label {
-    font-size: 14px;
-}
-
-/* 📱 Responsive general */
+/* Responsivo */
 @media (max-width: 768px) {
-    .table-container {
-        padding: 0;
-        box-shadow: none;
-        border-radius: 0;
+    #inputBusqueda {
+        width: 100%;
+        margin-top: 1rem;
     }
 
-    .table th,
-    .table td {
-        font-size: 13px;
-        padding: 10px;
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
     }
 
-    .modal-dialog {
-        margin: 10px;
+    .card .btn-outline-primary,
+    .card .btn-outline-danger {
+        margin-top: 5px;
     }
 }
-/* ⬛ Corrige desbordes en tablas grandes */
-.table-container {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
-}
 
-/* 🛠️ Asegura que la tabla no rompa diseño en móvil */
-.table {
-    min-width: 800px; /* fuerza scroll si es muy ancha */
-    border-collapse: collapse;
+/* Animación sutil para botones y badges */
+button,
+.badge {
+    transition: all 0.2s ease-in-out;
 }

@@ -1,5 +1,12 @@
-body {
-    background-color: #f8f9fa;
+/* Fondo general y tipografía */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-primario);
+    opacity: 0.5; /* Fondo al 20% */
+    z-index: -1;
+    pointer-events: none;
 }
 
 .tecnico-card {
@@ -9,7 +16,7 @@ body {
 
 .tecnico-card:hover {
     transform: scale(1.02);
-    background-color: #e9ecef;
+    background-color: var(--color-primario);
 }
 
 .tecnico-card.bg-primary {
@@ -30,7 +37,7 @@ body {
 .mapa-contenedor {
     width: 100%;
     height: 400px;
-    border: 2px solid #dee2e6;
+    border: 2px solid #c8d2dc;
     border-radius: 8px;
     overflow: hidden;
 }
@@ -87,4 +94,12 @@ h4 {
     object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+:root {
+    --color-primario: [[${colorInstitucion}]];
+}
+
+.bg-primary {
+    background-color: var(--color-primario) !important;
+    border-color: var(--color-primario) !important;
 }

@@ -20,10 +20,13 @@ public interface InstitucionTipoReporteRepositorio extends JpaRepository<Institu
     List<InstitucionTipoReporte> findByInstitucionId(Long institucionId);
 
     List<InstitucionTipoReporte> findByCategoriaReporteId(Long categoriaId);
+    @Query("SELECT COUNT(itr) FROM InstitucionTipoReporte itr WHERE itr.tipoReporte.id = :tipoId")
+    long countByTipoReporteId(@Param("tipoId") Long tipoId);
 
     @Query("SELECT itr.tipoReporte FROM InstitucionTipoReporte itr WHERE itr.categoriaReporte.id = :categoriaId")
     List<TipoReporte> findTiposReportePorCategoria(@Param("categoriaId") Long categoriaId);
+    List<InstitucionTipoReporte> findByTipoReporteId(Long tipoReporteId);
 
-    Optional<InstitucionTipoReporte> findByTipoReporteId(Long tipoReporteId);
+
 
 }

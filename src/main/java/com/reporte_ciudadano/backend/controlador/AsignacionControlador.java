@@ -6,6 +6,7 @@ import com.reporte_ciudadano.backend.modelo.RolInstitucional;
 import com.reporte_ciudadano.backend.modelo.UsuarioInstitucional;
 import com.reporte_ciudadano.backend.servicio.AsignacionTecnicoServicio;
 import com.reporte_ciudadano.backend.servicio.ReporteServicio;
+import com.reporte_ciudadano.backend.servicio.TipoReporteServicio;
 import com.reporte_ciudadano.backend.servicio.UsuarioInstitucionalServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,7 +24,8 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/asignaciones")
 public class AsignacionControlador {
-
+    @Autowired
+    private TipoReporteServicio tipoReporteServicio;
     @Autowired
     private AsignacionTecnicoServicio asignacionServicio;
 
@@ -170,7 +172,22 @@ public class AsignacionControlador {
         model.addAttribute("resueltos", resueltos);
         model.addAttribute("cerrados", cerrados);
         model.addAttribute("tecnicoSeleccionadoId", tecnicoId);
+        var tipos = tipoReporteServicio.listarTodos();
+        model.addAttribute("tipos", tipos);
 
+        String color = "#2B2D30FF"; // color por defecto
+
+        if (usuario.getInstitucion() != null && usuario.getInstitucion().getColorPrimario() != null && !usuario.getInstitucion().getColorPrimario().isEmpty()) {
+            color = usuario.getInstitucion().getColorPrimario();
+        }
+
+        model.addAttribute("colorInstitucion", color);
+
+        String nombreInstitucion = (usuario.getInstitucion() != null)
+                ? usuario.getInstitucion().getNombre()
+                : "Superadministrador";
+
+        model.addAttribute("nombreInstitucion", nombreInstitucion);
         return "asignacion_reportes";
     }
 

@@ -20,6 +20,8 @@ public interface AsignacionTecnicoRepositorio extends JpaRepository<AsignacionTe
     @Query("SELECT a FROM AsignacionTecnico a JOIN FETCH a.reporte r LEFT JOIN FETCH r.evidencias WHERE a.tecnico.id = :tecnicoId")
     List<AsignacionTecnico> listarPorTecnicoConEvidencias(@Param("tecnicoId") Long tecnicoId);
     @Modifying
+    @org.springframework.transaction.annotation.Transactional
     @Query("DELETE FROM AsignacionTecnico a WHERE a.reporte.id = :reporteId")
     void eliminarPorReporteId(@Param("reporteId") Long reporteId);
+
 }

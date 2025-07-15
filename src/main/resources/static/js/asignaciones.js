@@ -81,5 +81,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+document.addEventListener("DOMContentLoaded", () => {
+    const yaHayReportes = document.querySelectorAll("tr[data-estado]").length > 0;
+
+    // Verificamos si ya estamos en una URL con técnico asignado
+    const yaHayTecnicoSeleccionado = window.location.pathname.includes("/asignaciones/reportes/");
+
+    if (!yaHayReportes && !yaHayTecnicoSeleccionado) {
+        const primerTecnico = document.querySelector('[data-tecnico-id]');
+        if (primerTecnico) {
+            const tecnicoId = primerTecnico.getAttribute('data-tecnico-id');
+            window.location.replace('/asignaciones/reportes/' + tecnicoId);
+        }
+    }
+});
 
 

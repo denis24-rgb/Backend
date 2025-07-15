@@ -110,8 +110,9 @@ public class AsignacionTecnicoServicio {
     }
 
     public long contarCerrados(Long tecnicoId) {
-        return asignacionRepo.countByTecnicoIdAndReporte_EstadoIgnoreCaseAndFechaFinalizacionIsNotNull(tecnicoId, "cerrado");
+        return asignacionRepo.countByTecnicoIdAndReporte_EstadoIgnoreCase(tecnicoId, "cerrado");
     }
+
 
     public Optional<AsignacionTecnico> obtenerPorReporte(Long reporteId) {
         return asignacionRepo.findByReporteId(reporteId);

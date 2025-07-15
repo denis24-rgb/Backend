@@ -12,6 +12,7 @@ public interface EvidenciaRepositorio extends JpaRepository<Evidencia, Long> {
     Evidencia findTopByReporteIdAndTipoEvidencia(Long reporteId, String tipoEvidencia);
     List<Evidencia> findByReporteId(Long reporteId);
     @Modifying
+    @org.springframework.transaction.annotation.Transactional
     @Query("DELETE FROM Evidencia e WHERE e.reporte.id = :reporteId")
     void eliminarPorReporteId(@Param("reporteId") Long reporteId);
 }
