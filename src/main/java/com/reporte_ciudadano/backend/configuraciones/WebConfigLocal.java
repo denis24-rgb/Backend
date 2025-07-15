@@ -13,10 +13,12 @@ public class WebConfigLocal implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/imagenes/**")
                 .addResourceLocations(
+                        "classpath:/static/imagenes/",
                         "file:///C:/imagenes-trabajos/",
                         "file:///C:/evidencias/",
                         "file:///C:/iconos-tipo-reporte/",
-                        "file:///C:/avisos-comunitarios/"
+                        "file:///C:/avisos-comunitarios/",
+                        "file:///C:/iconos-instituciones/"
                 );
     }
 }

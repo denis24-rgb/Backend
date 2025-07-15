@@ -1,22 +1,38 @@
-body {
-    background-color: #f8f9fa;
+:root {
+    --color-primario: #2b2d30; /* color base */
+    --color-rgb: 0, 123, 255; /* valor por defecto si no se inyecta dinámicamente */
+}
+
+html, body {
     margin: 0;
     padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     min-height: 100vh;
+    overflow-x: hidden;
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* IE y Edge */
+    background-color: rgba(var(--color-rgb), 0.2); /* fondo semitransparente institucional */
 }
 
+body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+/* Contenedor principal */
 .container {
-    max-width: 90%;
+    max-width: 100%;
     padding: 10px;
+    overflow-x: hidden;
 }
 
+/* Tarjetas */
 .card {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
     border: none;
     padding: 10px;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.87); /* fondo claro semitransparente */
     transition: transform 0.2s;
-    height: 400px; /* ✅ Altura fija para las tarjetas */
+    height: 400px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -27,6 +43,7 @@ body {
     transform: scale(1.02);
 }
 
+/* Título de las tarjetas */
 h6 {
     font-size: 1rem;
     font-weight: 700;
@@ -39,25 +56,24 @@ h6 {
     width: 100%;
 }
 
-/* 🎯 Gráfico de Pastel (Estados) */
+/* Gráficos */
 #pieChartEstados {
     width: 350px;
     height: 350px;
     margin: 0 auto;
 }
 
-/* 🎯 Gráfico por Tipo */
 #barChartTipos {
     width: 100%;
     height: 276px;
 }
 
-/* 🎯 Gráfico de Evolución */
 #graficoEvolucion {
     width: 100%;
     height: 200px;
 }
 
+/* Selectores de fecha y evolución */
 #selectorEvolucion,
 #fechaInicio,
 #fechaFin {
@@ -67,10 +83,35 @@ h6 {
     border-radius: 4px;
 }
 
-/* 🎯 Responsive para pantallas pequeñas */
+/* Selector de institución */
+#selectorInstitucion,
+.input-group-text {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+}
+
+.filtro-institucion {
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    z-index: 999;
+    background-color: rgba(var(--color-rgb), 0.9);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.93);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .row > .col-md-8,
-    .row > .col-md-4 {
+    .row > .col-md-4,
+    .row > .col-md-7,
+    .row > .col-md-5 {
         flex: 100%;
         max-width: 100%;
     }
@@ -84,19 +125,22 @@ h6 {
         height: 220px;
     }
 
-    #barChartTipos {
-        height: 180px;
-    }
-
+    #barChartTipos,
     #graficoEvolucion {
         height: 180px;
     }
-}
-html, body {
-    overflow-x: hidden; /* Evita el scroll horizontal innecesario */
-}
 
-.container {
-    max-width: 100%;
-    overflow-x: hidden; /* Evita que el contenedor se desborde horizontalmente */
+    .filtro-institucion {
+        position: static;
+        margin-bottom: 10px;
+        justify-content: center;
+    }
+}
+.input-group-text {
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    font-weight: bold; /* ← NEGRITA agregada */
+    background-color: rgba(255, 255, 255, 0.9); /* opcional: más contraste */
 }

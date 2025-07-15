@@ -8,49 +8,58 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="css/estadisticas.css">
+    <style th:inline="css">
+        :root {
+            --color-primario: [[${colorInstitucion}]];
+        }
+    </style>
 </head>
-<body>
-
+<body class="institucional-background" th:attr="data-color-institucion=${colorInstitucion}">
 <div class="container mt-3">
-    <div class="row">
 
+    <!-- Selector flotante solo para superadmin -->
+    <div th:if="${esSuperadmin}" class="filtro-institucion">
+        <label class="input-group-text">Institución</label>
+        <select class="form-select" id="selectorInstitucion">
+            <option th:each="inst : ${instituciones}"
+                    th:value="${inst.id}"
+                    th:selected="${inst.id == institucionId}"
+                    th:text="${inst.nombre}">
+            </option>
+        </select>
+    </div>
+
+
+    <div class="row">
         <!-- Columna Izquierda: Tipos + Evolución -->
         <div class="col-md-7 d-flex flex-column justify-content-between" style="gap: 15px;">
 
             <!-- Gráfico por Tipo -->
             <div class="card p-2" style="height: 330px;">
                 <h6 class="text-center mb-2">Reportes por Tipo</h6>
-
                 <div style="height: 260px;">
                     <canvas id="barChartTipos"></canvas>
                 </div>
             </div>
 
-
             <!-- Gráfico evolución -->
             <div class="card p-2" style="height: 350px;">
-
                 <div class="d-flex justify-content-between align-items-center mb-2">
                     <h6 class="mb-0">Evolución de Reportes</h6>
-
                     <div class="d-flex align-items-center" style="gap: 10px;">
                         <select id="selectorEvolucion" class="form-select form-select-sm w-auto">
                             <option value="dia">Por Día</option>
                             <option value="mes" selected>Por Mes</option>
                             <option value="rango">Rango de Fechas</option>
                         </select>
-
                         <input type="date" id="fechaInicio" class="form-control form-control-sm w-auto" disabled>
                         <input type="date" id="fechaFin" class="form-control form-control-sm w-auto" disabled>
                     </div>
                 </div>
-
                 <div style="height: 300px;">
                     <canvas id="graficoEvolucion" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
-
-
 
         </div>
 
@@ -71,23 +80,54 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
+<!-- Variables desde backend -->
 <script th:inline="javascript">
-    const recibidos = [[${recibidos}]];
-    const enProceso = [[${enProceso}]];
-    const resueltos = [[${resueltos}]];
-    const cerrados = [[${cerrados}]];
+    /*<![CDATA[*/
+    const institucionId = /*[[${institucionId}]]*/ 0;
+    const recibidos = /*[[${recibidos}]]*/ 0;
+    const enProceso = /*[[${enProceso}]]*/ 0;
+    const resueltos = /*[[${resueltos}]]*/ 0;
+    const cerrados = /*[[${cerrados}]]*/ 0;
 
-    const tipos = [[${tipos}]];
-    const cantidadesTipos = [[${cantidadesTipos}]];
+    const tipos = /*[[${tipos}]]*/ [];
+    const cantidadesTipos = /*[[${cantidadesTipos}]]*/ [];
 
-    const meses = [[${meses}]];
-    const reportesMes = [[${reportesMes}]];
+    const meses = /*[[${meses}]]*/ [];
+    const reportesMes = /*[[${reportesMes}]]*/ [];
 
-    const dias = [[${dias}]];
-    const reportesDia = [[${reportesDia}]];
+    const dias = /*[[${dias}]]*/ [];
+    const reportesDia = /*[[${reportesDia}]]*/ [];
+    /*]]>*/
 </script>
 
+
 <script src="js/estadisticas.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const selector = document.getElementById("selectorInstitucion");
+        if (selector) {
+            selector.addEventListener("change", function () {
+                const id = this.value;
+                // Reemplaza la URL sin historial extra
+                const nuevaUrl = `/estadisticas?institucionId=${id}`;
+                window.location.replace(nuevaUrl);
+            });
+        }
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const colorHex = document.body.dataset.colorInstitucion;
+        if (colorHex) {
+            const hex = colorHex.replace("#", "");
+            const bigint = parseInt(hex, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            document.documentElement.style.setProperty('--color-rgb', `${r}, ${g}, ${b}`);
+        }
+    });
+</script>
 
 </body>
 </html>

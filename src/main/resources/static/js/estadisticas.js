@@ -126,7 +126,7 @@ function generarGraficoEvolucion(labels, data, titulo) {
             }]
         },
         options: {
-            responsive: false, // 🔧 Desactivas responsive porque tú controlas el tamaño
+            responsive: false, // Desactivas responsive porque tú controlas el tamaño
             maintainAspectRatio: false,
             plugins: {
                 legend: { position: 'top' },
@@ -146,7 +146,7 @@ function generarGraficoEvolucion(labels, data, titulo) {
 }
 
 function buscarReportesPorRango(fechaInicio, fechaFin) {
-    fetch(`/api/estadisticas/rango?inicio=${fechaInicio}&fin=${fechaFin}`)
+    fetch(`/api/estadisticas/rango?inicio=${fechaInicio}&fin=${fechaFin}&institucionId=${institucionId}`)
         .then(response => response.json())
         .then(data => {
             if (data.labels && data.valores) {

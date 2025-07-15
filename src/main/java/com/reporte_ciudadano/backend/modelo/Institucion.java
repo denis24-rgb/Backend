@@ -27,6 +27,13 @@ public class Institucion {
     @Column(nullable = false)
     private boolean activo;
 
+    // NUEVOS CAMPOS PERSONALIZADOS
+    @Column(name = "color_primario")
+    private String colorPrimario; // Ejemplo: "#28a745"
+
+    @Column(name = "logo")
+    private String logo; // Ejemplo: "logo_cre.png"
+
     // Relaciones
 
     @OneToMany(mappedBy = "institucion")

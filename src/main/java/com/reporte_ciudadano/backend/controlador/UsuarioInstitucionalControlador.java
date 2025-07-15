@@ -31,6 +31,14 @@ public class UsuarioInstitucionalControlador {
         // Obtener el usuario autenticado
         String correo = principal.getName();
         UsuarioInstitucional actual = usuarioServicio.obtenerPorCorreo(correo).orElseThrow();
+// Definir color de institución (ejemplo básico)
+        String colorInstitucion = "#2B2D30FF"; // azul por defecto
+
+        if (actual.getRol() != RolInstitucional.SUPERADMIN && actual.getInstitucion() != null) {
+            colorInstitucion = actual.getInstitucion().getColorPrimario(); // Suponiendo que tienes un campo 'color'
+        }
+
+        model.addAttribute("colorInstitucion", colorInstitucion);
 
         List<UsuarioInstitucional> usuarios;
 
@@ -52,7 +60,7 @@ public class UsuarioInstitucionalControlador {
         if (!model.containsAttribute("usuario")) {
             UsuarioInstitucional nuevo = new UsuarioInstitucional();
             if (actual.getRol() != RolInstitucional.SUPERADMIN) {
-                nuevo.setInstitucion(actual.getInstitucion()); // 👈 Aquí le asignamos la institución
+                nuevo.setInstitucion(actual.getInstitucion()); //  Aquí le asignamos la institución
             }
             model.addAttribute("usuario", nuevo);
         }
@@ -94,13 +102,16 @@ public class UsuarioInstitucionalControlador {
         return "redirect:/usuarios";
     }
 
-
-
-
-
     @PostMapping("/eliminar")
-    public String eliminarUsuario(@RequestParam("id") Long id) {
-        usuarioServicio.eliminar(id);
+    public String eliminarUsuario(@RequestParam("id") Long id, RedirectAttributes redirectAttributes) {
+        try {
+            usuarioServicio.eliminar(id);
+            redirectAttributes.addFlashAttribute("exito", "Usuario eliminado correctamente.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorEliminacion", "No se puede eliminar este usuario porque tiene registros asociados.");
+        }
         return "redirect:/usuarios";
     }
+
+
 }

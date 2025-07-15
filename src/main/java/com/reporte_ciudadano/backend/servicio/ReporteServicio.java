@@ -1,5 +1,6 @@
 package com.reporte_ciudadano.backend.servicio;
 
+import com.reporte_ciudadano.backend.configuraciones.RutaStorageConfig;
 import com.reporte_ciudadano.backend.dto.ActualizacionTecnico;
 import com.reporte_ciudadano.backend.modelo.*;
 import com.reporte_ciudadano.backend.repositorio.*;
@@ -44,6 +45,10 @@ public class ReporteServicio {
 
     @Autowired
     private NotificacionServicio notificacionServicio;
+
+    @Autowired
+    private RutaStorageConfig rutaStorageConfig;
+
 
     private static final List<String> ESTADOS_VALIDOS = List.of(
             "recibido", "en proceso", "resuelto", "cerrado");
@@ -158,7 +163,9 @@ public class ReporteServicio {
         notificacionServicio.crear(reporte.getUsuario(), reporte, mensaje);
         return reporte;
     }
-
+    public List<Reporte> listarPorInstitucion(Long institucionId) {
+        return reporteRepositorio.findByInstitucionId(institucionId);
+    }
     public Reporte buscarPorId(Long id) {
         return reporteRepositorio.findById(id).orElse(null);
     }
@@ -259,24 +266,54 @@ public class ReporteServicio {
 
     @Transactional
     public void eliminarPorId(Long id) {
-        // 1. Eliminar historial de reporte
+        // 1. Recuperar el reporte completo
+        Reporte reporte = reporteRepositorio.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
+
+        // 2. Eliminar archivos físicos de evidencias del ciudadano
+        for (Evidencia evidencia : reporte.getEvidencias()) {
+            String nombreArchivo = evidencia.getUrl();
+            if (nombreArchivo != null) {
+                String ruta = rutaStorageConfig.getRutaEvidencias() + "/" + nombreArchivo;
+                eliminarArchivoFisico(ruta);
+            }
+        }
+
+        // 3. Eliminar archivo físico del trabajo del técnico (si existe)
+        asignacionTecnicoRepositorio.findByReporteId(id).ifPresent(asignacion -> {
+            String imagenTrabajo = asignacion.getImagenTrabajo();
+            if (imagenTrabajo != null && !imagenTrabajo.isBlank()) {
+                String ruta = rutaStorageConfig.getRutaTrabajos() + "/" + imagenTrabajo;
+                eliminarArchivoFisico(ruta);
+            }
+            asignacionTecnicoRepositorio.delete(asignacion); // 🔁 BORRAR desde aquí
+        });
+
+        // 4. Eliminar historial de cambios (si no está en cascade)
         historialReporteRepositorio.eliminarPorReporteId(id);
 
-        // 2. Eliminar notificaciones asociadas
+        // 5. Eliminar notificaciones
         notificacionServicio.eliminarPorReporteId(id);
 
-        // 3. Eliminar asignaciones
-        asignacionTecnicoRepositorio.eliminarPorReporteId(id);
-
-        // 4. Eliminar evidencias
-        evidenciaRepositorio.eliminarPorReporteId(id);
-
-        // 5. Finalmente, eliminar el reporte
-        reporteRepositorio.deleteById(id);
+        // 6. Eliminar el reporte (cascada se encarga de evidencias y estados)
+        reporteRepositorio.delete(reporte);
     }
 
-    public List<Reporte> listarPorInstitucion(Long institucionId) {
-        return reporteRepositorio.findByInstitucionId(institucionId);
+
+    private void eliminarArchivoFisico(String rutaCompleta) {
+        if (rutaCompleta != null) {
+            java.io.File archivo = new java.io.File(rutaCompleta);
+            if (archivo.exists() && archivo.isFile()) {
+                boolean eliminado = archivo.delete();
+                if (eliminado) {
+                    System.out.println("🗑️ Archivo eliminado correctamente: " + rutaCompleta);
+                } else {
+                    System.out.println("⚠️ No se pudo eliminar el archivo: " + rutaCompleta);
+                }
+            } else {
+                System.out.println("⚠️ Archivo no encontrado: " + rutaCompleta);
+            }
+        }
     }
 
     @Transactional
@@ -311,20 +348,25 @@ public class ReporteServicio {
         var reporte = reporteRepositorio.findById(reporteId)
                 .orElseThrow(() -> new RuntimeException("Reporte no encontrado"));
 
-        // Buscar la nueva relación donde ese tipo de reporte está asignado a alguna institución
-        var nuevaRelacion = institucionTipoReporteRepositorio.findByTipoReporteId(tipoReporteId)
-                .orElseThrow(() -> new RuntimeException("El tipo de reporte no está asignado a ninguna institución"));
+        // Obtener relaciones con ese tipo
+        List<InstitucionTipoReporte> relaciones = institucionTipoReporteRepositorio.findByTipoReporteId(tipoReporteId);
+        if (relaciones.isEmpty()) {
+            throw new RuntimeException("El tipo de reporte no está asignado a ninguna institución");
+        }
+
+        // Usamos la primera relación encontrada
+        InstitucionTipoReporte nuevaRelacion = relaciones.get(0);
 
         String tipoAnterior = reporte.getTipoReporte().getNombre();
         String institucionAnterior = (reporte.getInstitucion() != null) ? reporte.getInstitucion().getNombre() : "Sin asignar";
 
-        // Aquí se actualiza tanto el tipo como la institución
+        // Actualizar tipo e institución
         reporte.setTipoReporte(nuevaRelacion.getTipoReporte());
         reporte.setInstitucion(nuevaRelacion.getInstitucion());
 
         reporteRepositorio.save(reporte);
 
-        // Registrar en historial
+        // Guardar historial
         var historial = new HistorialReporte();
         historial.setDetalle("Tipo de reporte cambiado de " + tipoAnterior + " a " + nuevaRelacion.getTipoReporte().getNombre()
                 + ". La institución pasó de " + institucionAnterior + " a " + nuevaRelacion.getInstitucion().getNombre() + ".");
@@ -337,26 +379,45 @@ public class ReporteServicio {
     public int contarTotalReportesPorInstitucion(Long institucionId) {
         return reporteRepositorio.contarPorInstitucion(institucionId);
     }
-    public List<String> obtenerNombresTiposReporte() {
-        return reporteRepositorio.obtenerNombresTiposConCantidad();
+
+
+
+    public long contarPorEstadoEInstitucion(String estado, Long institucionId) {
+        return reporteRepositorio.contarPorEstadoEInstitucion(estado, institucionId);
     }
 
-    public List<Long> contarReportesPorTipo() {
-        return reporteRepositorio.contarPorCadaTipo();
-    }
-    public List<String> obtenerMesesConFormato() {
-        return reporteRepositorio.obtenerMesesConFormato();
+    public List<String> obtenerNombresTiposPorInstitucion(Long institucionId) {
+        return reporteRepositorio.obtenerNombresTiposPorInstitucion(institucionId);
     }
 
-    public List<Long> contarReportesPorMes() {
-        return reporteRepositorio.contarPorCadaMes();
-    }
-    public List<String> obtenerDiasEnRango(LocalDate inicio, LocalDate fin) {
-        return reporteRepositorio.obtenerDiasEnRango(inicio, fin);
-    }
-
-    public List<Long> contarReportesPorDiaEnRango(LocalDate inicio, LocalDate fin) {
-        return reporteRepositorio.contarReportesPorDiaEnRango(inicio, fin);
+    public List<Long> contarReportesPorTipoEInstitucion(Long institucionId) {
+        List<String> tipos = reporteRepositorio.obtenerNombresTiposPorInstitucion(institucionId);
+        return tipos.stream()
+                .map(nombre -> reporteRepositorio.contarPorTipoEInstitucion(nombre, institucionId))
+                .toList();
     }
 
+    public List<String> obtenerMesesConFormatoPorInstitucion(Long institucionId) {
+        return reporteRepositorio.obtenerMesesConFormatoPorInstitucion(institucionId);
+    }
+
+    public List<Long> contarReportesPorMesEInstitucion(Long institucionId) {
+        return reporteRepositorio.contarPorMesEInstitucion(institucionId);
+    }
+
+    public List<String> obtenerUltimosDiasPorInstitucion(Long institucionId) {
+        return reporteRepositorio.obtenerUltimosDias(institucionId);
+    }
+
+    public List<Long> contarReportesPorDiaRecienteEInstitucion(Long institucionId) {
+        return reporteRepositorio.contarUltimosDias(institucionId);
+    }
+
+    public List<String> obtenerDiasEnRangoPorInstitucion(LocalDate inicio, LocalDate fin, Long institucionId) {
+        return reporteRepositorio.obtenerDiasEnRango(inicio, fin, institucionId);
+    }
+
+    public List<Long> contarReportesPorDiaEnRangoEInstitucion(LocalDate inicio, LocalDate fin, Long institucionId) {
+        return reporteRepositorio.contarPorDiaEnRango(inicio, fin, institucionId);
+    }
 }

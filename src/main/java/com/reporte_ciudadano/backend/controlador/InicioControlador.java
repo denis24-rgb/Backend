@@ -96,10 +96,17 @@ public class InicioControlador {
 
         model.addAttribute("reportesJSON", reportesJSON);
         model.addAttribute("tecnicos", tecnicosMap);
+        model.addAttribute("usuario", usuario);
         model.addAttribute("reportesActivos", reportesActivos);
         model.addAttribute("asignacionesPendientes", asignacionesPendientes);
         model.addAttribute("usuariosActivos", usuariosActivos);
+        String color = institucion.getColorPrimario();
+        if (color == null || color.isEmpty()) {
+            color = "#0d6efd";
+        }
+        model.addAttribute("colorInstitucion", color);
 
+        model.addAttribute("institucion", institucion);
         return "inicio-admin";
     }
 

@@ -152,6 +152,7 @@ function contarReportes() {
             if (pendientesEl) pendientesEl.textContent = data["recibido"] || 0;
             if (procesoEl) procesoEl.textContent = data["en proceso"] || 0;
             if (finalizadosEl) finalizadosEl.textContent = data["resuelto"] || 0;
+            if (cerradoEl) cerradoEl.textContent = data["cerrado"] || 0;
         });
 }
 

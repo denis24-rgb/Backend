@@ -5,19 +5,29 @@
     <title>Usuarios Institucionales</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/css/usuarios.css">
+    <style th:inline="css">
+        :root {
+            --color-primario: [[${colorInstitucion}]];
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body class="bg-light" th:attr="data-color-institucion=${colorInstitucion}">
 
 <div class="container mt-5">
     <div class="card shadow">
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h3 class="mb-0">👥 Usuarios Institucionales</h3>
+            <h3 class="mb-0 text-white">
+                Usuarios de Institucion -
+                <span th:text="${usuario.institucion != null ? usuario.institucion.nombre : 'SUPERADMIN'}">
+        Nombre de institución o SUPERADMIN
+    </span>
+            </h3>
+
+
             <div>
                 <!--  Búsqueda en tiempo real -->
                 <input id="inputBusqueda" class="form-control me-2" type="text" placeholder="Buscar usuario...">
             </div>
-            <!-- Boton Crear nuevo usuario -->
-            <button class="btn btn-light text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevo">➕ Nuevo Usuario</button>
         </div>
 
         <div class="card-body">
@@ -26,53 +36,69 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <div class="table-container">
-                <table class="table table-bordered table-hover align-middle text-center">
-                <thead class="table-secondary">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Usuario</th>
-                    <th>Correo</th>
-                    <th>Rol</th>
-                    <th>Teléfono</th>
-                    <th>Institución</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-                </thead>
-                <tbody id="tablaUsuarios">
-
-                <tr th:each="usuario : ${usuarios}">
-                    <td th:text="${usuario.nombre}"></td>
-                    <td th:text="${usuario.usuario}"></td>
-                    <td th:text="${usuario.correo}"></td>
-                    <td th:text="${usuario.rol}"></td>
-                    <td th:text="${usuario.telefono}"></td>
-                    <td th:text="${usuario.institucion != null ? usuario.institucion.nombre : 'Superadmin'}"></td>
-                    <td>
-        <span th:text="${usuario.activo ? 'Activo' : 'Inactivo'}"
-              class="fw-semibold"
-              th:classappend="${usuario.activo} ? 'text-success' : 'text-danger'"></span>
-                    </td>
-                    <td>
-                        <!-- Botón editar -->
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" th:data-bs-target="'#modalEditar' + ${usuario.id}">
-                            ✏️ Editar
-                        </button>
-                        <!-- Botón eliminar -->
-                        <button class="btn btn-sm btn-danger mb-1" data-bs-toggle="modal" th:data-bs-target="'#modalEliminar' + ${usuario.id}">
-                            🗑️ Eliminar
-                        </button>
-                    </td>
-                </tr>
-
-
-                <tr th:if="${#lists.isEmpty(usuarios)}">
-                    <td colspan="8" class="text-muted">No hay usuarios registrados.</td>
-                </tr>
-                </tbody>
-                </table>
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-primary fw-bold" data-bs-toggle="modal" data-bs-target="#modalNuevo">➕ Nuevo Usuario</button>
             </div>
+
+            <div class="row" id="contenedorUsuarios">
+                <div class="col-md-6 col-lg-4 mb-4" th:each="usuario : ${usuarios}">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="me-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="#6c757d" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                        <path d="M13.468 12.37C12.758 11.226 11.288 10.5 9.5 10.5h-3c-1.788 0-3.258.726-3.968 1.87A6.987 6.987 0 0 1 1 8a7 7 0 1 1 12.468 4.37zM8 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"/>
+                                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h5 class="mb-0" th:text="${usuario.nombre}">Nombre</h5>
+                                    <small class="text-muted d-block" th:text="${usuario.correo}">correo@example.com</small>
+                                    <small class="text-muted d-block">
+                                        📞 <span th:text="${usuario.telefono}">000-000-000</span>
+                                    </small>
+                                    <span th:text="${usuario.rol}" class="fw-medium text-dark">Rol</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                    <span th:text="${usuario.activo ? 'Activo' : 'Inactivo'}"
+                          th:classappend="${usuario.activo} ? 'badge bg-success' : 'badge bg-secondary'">
+                    </span>
+                                <div class="d-flex gap-2">
+                                    <!-- Botón Editar -->
+                                    <button type="button" class="btn btn-sm btn-editar"
+                                            data-bs-toggle="modal" th:data-bs-target="'#modalEditar' + ${usuario.id}"
+                                            title="Editar usuario">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                             viewBox="0 0 16 16">
+                                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10zM11.207 2L13 3.793 14.793 2 13 0.207 11.207 2zM12 4.207L10.207 2.414 3 9.621V11h1.379l7.207-7.207z"/>
+                                        </svg>
+                                    </button>
+
+                                    <!-- Botón Eliminar -->
+                                    <button type="button" class="btn btn-sm btn-eliminar"
+                                            data-bs-toggle="modal" th:data-bs-target="'#modalEliminar' + ${usuario.id}"
+                                            title="Eliminar usuario">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                             viewBox="0 0 16 16">
+                                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5.5a.5.5 0 0 1 1 0v6a.5.5 0 0 1-1 0V6zm3 .5a.5.5 0 0 1 .5-.5.5.5 0 0 1 0 1v6a.5.5 0 0 1-1 0V6.5z"/>
+                                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4H2.5a1 1 0 0 1 0-2h3.087a1.5 1.5 0 0 1 2.826 0h3.087a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118z"/>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Si no hay usuarios -->
+                <div class="col-12" th:if="${#lists.isEmpty(usuarios)}">
+                    <div class="alert alert-secondary text-center">No hay usuarios registrados.</div>
+                </div>
+            </div>
+
+        </div>
         </div>
     </div>
 </div>
@@ -82,11 +108,11 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
              <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">Registrar Nuevo Usuario</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                </div>
-                <div class="modal-body">
+                 <div class="modal-header text-white" style="background-color: var(--color-primario);">
+                     <h5 class="modal-title">Registrar Nuevo Usuario</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                 </div>
+                 <div class="modal-body">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Nombre completo</label>
@@ -96,7 +122,7 @@
                             <label class="form-label">Usuario</label>
                             <input type="text" class="form-control" th:field="*{usuario}" required>
                             <div th:if="${error != null and error.contains('usuario')}" class="text-danger small mt-1">
-                                ⚠️ <span th:text="${error}"></span>
+                                 <span th:text="${error}"></span>
                             </div>
                         </div>
 
@@ -104,7 +130,7 @@
                             <label class="form-label">Correo</label>
                             <input type="email" class="form-control" th:field="*{correo}" required>
                             <div th:if="${error != null and error.contains('correo')}" class="text-danger small mt-1">
-                                ⚠️ <span th:text="${error}"></span>
+                                ️ <span th:text="${error}"></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -115,7 +141,7 @@
                             <label class="form-label">Teléfono</label>
                             <input type="text" class="form-control" th:field="*{telefono}" required>
                             <div th:if="${error != null and error.contains('teléfono')}" class="text-danger small mt-1">
-                                ⚠️ <span th:text="${error}"></span>
+                                 <span th:text="${error}"></span>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -129,14 +155,14 @@
                         <div class="col-md-12">
                             <label class="form-label">Institución</label>
 
-                            <!-- ✅ Solo mostrar select si es SUPERADMIN -->
+                            <!--  Solo mostrar select si es SUPERADMIN -->
                             <div th:if="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
                                 <select class="form-select" th:field="*{institucion}" required>
                                     <option th:each="inst : ${instituciones}" th:value="${inst.id}" th:text="${inst.nombre}"></option>
                                 </select>
                             </div>
 
-                            <!-- ✅ Para ADMIN, OPERADOR, etc: mostrar institución fija -->
+                            <!--  Para ADMIN, OPERADOR, etc: mostrar institución fija -->
                             <div th:unless="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
                                 <input type="text" class="form-control"
                                        th:value="${usuario.institucion?.nombre ?: 'Sin institución'}"
@@ -151,11 +177,11 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">💾 Guardar</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                </div>
-            </form>
+                 <div class="modal-footer">
+                     <button type="submit" class="btn text-white" style="background-color: var(--color-primario);">💾 Guardar</button>
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                 </div>
+             </form>
         </div>
     </div>
 </div>
@@ -189,8 +215,8 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <form th:action="@{/usuarios/guardar}" method="post">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">Editar Usuario</h5>
+                    <div class="modal-header text-white" style="background-color: var(--color-primario);">
+                    <h5 class="modal-title">Editar Usuario</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 
@@ -231,7 +257,7 @@
                             <div class="col-md-12">
                                     <label>Institución</label>
 
-                                    <!-- ✅ Mostrar <select> solo si es SUPERADMIN -->
+                                    <!--  Mostrar <select> solo si es SUPERADMIN -->
                                     <div th:if="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
                                         <select class="form-select" name="institucion" required>
                                             <option th:each="inst : ${instituciones}"
@@ -242,7 +268,7 @@
                                         </select>
                                     </div>
 
-                                    <!-- ✅ Mostrar institución fija si NO es superadmin -->
+                                    <!-- Mostrar institución fija si NO es superadmin -->
                                     <div th:unless="${#authorization.expression('hasRole(''SUPERADMIN'')')}">
                                         <input type="text" class="form-control"
                                                th:value="${usuario.institucion != null ? usuario.institucion.nombre : 'Sin institución'}"
@@ -260,17 +286,13 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-success">💾 Guardar</button>
+                        <button type="submit" class="btn text-white" style="background-color: var(--color-primario);">💾 Guardar</button>
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-
-
-
-
 
 </div>
 
@@ -287,12 +309,39 @@
 <script>
     document.getElementById('inputBusqueda').addEventListener('input', function () {
         const filtro = this.value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaUsuarios tr');
+        const tarjetas = document.querySelectorAll('#contenedorUsuarios .col-md-6');
 
-        filas.forEach(fila => {
-            const textoFila = fila.innerText.toLowerCase();
-            fila.style.display = textoFila.includes(filtro) ? '' : 'none';
+        tarjetas.forEach(tarjeta => {
+            const texto = tarjeta.innerText.toLowerCase();
+            tarjeta.style.display = texto.includes(filtro) ? '' : 'none';
         });
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const color = document.body.getAttribute("data-color-institucion");
+        if (color) {
+            document.documentElement.style.setProperty('--color-primario', color);
+        }
+    });
+</script>
+
+<!-- Toast de error eliminación -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+    <div id="toastErrorEliminar" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <span th:text="${errorEliminacion}">Error al eliminar usuario</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+    </div>
+</div>
+<script th:if="${errorEliminacion}" th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const toastEl = document.getElementById('toastErrorEliminar');
+        const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+        toast.show();
     });
 </script>
 

@@ -38,5 +38,7 @@ public class InstitucionServicio {
         return institucionRepositorio.existsByNombre(nombre) ||
                 institucionRepositorio.existsByCorreoInstitucional(correo);
     }
-
+    public List<Institucion> obtenerTodas() {
+        return institucionRepositorio.findAll();
+    }
 }

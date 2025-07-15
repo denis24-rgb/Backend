@@ -21,6 +21,7 @@ public interface ReporteRepositorio extends JpaRepository<Reporte, Long> {
     List<Reporte> findByUbicacionIsNotNull();
 
     long countByEstadoIgnoreCase(String estado);
+    long countByTipoReporteId(Long tipoReporteId);
 
     long countByEstadoIgnoreCaseAndInstitucionId(String estado, Long institucionId);
 
@@ -49,49 +50,53 @@ public interface ReporteRepositorio extends JpaRepository<Reporte, Long> {
 
     @Query("SELECT FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') FROM Reporte r GROUP BY FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
     List<String> obtenerMesesConFormato();
-
-    @Query("SELECT FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
-    List<String> obtenerMesesConFormatoPorInstitucion(@Param("institucionId") Long institucionId);
-
     @Query("SELECT COUNT(r) FROM Reporte r GROUP BY FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
     List<Long> contarPorCadaMes();
 
     @Query("SELECT COUNT(r) FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY FUNCTION('TO_CHAR', r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
     List<Long> contarPorCadaMesPorInstitucion(@Param("institucionId") Long institucionId);
 
-    @Query(value = """
-    SELECT TO_CHAR(fecha_reporte, 'DD/MM') AS dia
-    FROM reporte
-    WHERE fecha_reporte BETWEEN :inicio AND :fin
-    GROUP BY dia
-    ORDER BY MIN(fecha_reporte)
-    """, nativeQuery = true)
-    List<String> obtenerDiasEnRango(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
 
-    @Query(value = """
-    SELECT TO_CHAR(fecha_reporte, 'DD/MM') AS dia
-    FROM reporte
-    WHERE fecha_reporte BETWEEN :inicio AND :fin AND institucion_id = :institucionId
-    GROUP BY dia
-    ORDER BY MIN(fecha_reporte)
-    """, nativeQuery = true)
-    List<String> obtenerDiasEnRangoPorInstitucion(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin, @Param("institucionId") Long institucionId);
+    // Conteo por estado e institución
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE LOWER(r.estado) = LOWER(:estado) AND r.institucion.id = :institucionId")
+    long contarPorEstadoEInstitucion(@Param("estado") String estado, @Param("institucionId") Long institucionId);
 
-    @Query(value = """
-    SELECT COUNT(*)
-    FROM reporte
-    WHERE fecha_reporte BETWEEN :inicio AND :fin
-    GROUP BY TO_CHAR(fecha_reporte, 'DD/MM')
-    ORDER BY MIN(fecha_reporte)
-    """, nativeQuery = true)
-    List<Long> contarReportesPorDiaEnRango(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin);
+    // Nombres de tipos de reporte por institución
+    @Query("SELECT DISTINCT r.tipoReporte.nombre FROM Reporte r WHERE r.institucion.id = :institucionId")
+    List<String> obtenerNombresTiposPorInstitucion(@Param("institucionId") Long institucionId);
 
-    @Query(value = """
-    SELECT COUNT(*)
-    FROM reporte
-    WHERE fecha_reporte BETWEEN :inicio AND :fin AND institucion_id = :institucionId
-    GROUP BY TO_CHAR(fecha_reporte, 'DD/MM')
-    ORDER BY MIN(fecha_reporte)
-    """, nativeQuery = true)
-    List<Long> contarReportesPorDiaEnRangoPorInstitucion(@Param("inicio") LocalDate inicio, @Param("fin") LocalDate fin, @Param("institucionId") Long institucionId);
+    // Conteo por tipo de reporte e institución
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE r.tipoReporte.nombre = :nombreTipo AND r.institucion.id = :institucionId")
+    long contarPorTipoEInstitucion(@Param("nombreTipo") String nombreTipo, @Param("institucionId") Long institucionId);
+
+    // Conteo por tipo (usado en bucle)
+    @Query("SELECT r.tipoReporte.nombre, COUNT(r) FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY r.tipoReporte.nombre")
+    List<Object[]> contarPorTipoAgrupado(@Param("institucionId") Long institucionId);
+
+    // Meses (formato abreviado) con reportes por institución
+    @Query("SELECT TO_CHAR(r.fechaReporte, 'Mon') FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY TO_CHAR(r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
+    List<String> obtenerMesesConFormatoPorInstitucion(@Param("institucionId") Long institucionId);
+
+    // Conteo por mes
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY TO_CHAR(r.fechaReporte, 'Mon') ORDER BY MIN(r.fechaReporte)")
+    List<Long> contarPorMesEInstitucion(@Param("institucionId") Long institucionId);
+
+    // Últimos días recientes
+    @Query("SELECT TO_CHAR(r.fechaReporte, 'DD-MM') FROM Reporte r WHERE r.institucion.id = :institucionId ORDER BY r.fechaReporte DESC LIMIT 7")
+    List<String> obtenerUltimosDias(@Param("institucionId") Long institucionId);
+
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE r.institucion.id = :institucionId GROUP BY TO_CHAR(r.fechaReporte, 'DD-MM') ORDER BY MIN(r.fechaReporte) DESC")
+    List<Long> contarUltimosDias(@Param("institucionId") Long institucionId);
+
+    // Rango de fechas
+    @Query("SELECT TO_CHAR(r.fechaReporte, 'DD-MM') FROM Reporte r WHERE r.fechaReporte BETWEEN :inicio AND :fin AND r.institucion.id = :institucionId GROUP BY r.fechaReporte ORDER BY r.fechaReporte")
+    List<String> obtenerDiasEnRango(@Param("inicio") LocalDate inicio,
+                                    @Param("fin") LocalDate fin,
+                                    @Param("institucionId") Long institucionId);
+
+    @Query("SELECT COUNT(r) FROM Reporte r WHERE r.fechaReporte BETWEEN :inicio AND :fin AND r.institucion.id = :institucionId GROUP BY r.fechaReporte ORDER BY r.fechaReporte")
+    List<Long> contarPorDiaEnRango(@Param("inicio") LocalDate inicio,
+                                   @Param("fin") LocalDate fin,
+                                   @Param("institucionId") Long institucionId);
+
 }

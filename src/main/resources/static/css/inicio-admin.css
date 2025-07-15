@@ -1,71 +1,118 @@
-/* 🌐 Fondo general */
-body {
-    background-color: #f5f7fa;
-    font-family: 'Segoe UI', sans-serif;
+/*  Fondo general */
+:root {
+    --color-primario: #08776f; /* este valor se sobrescribirá con JS */
 }
 
-/* 📌 Sidebar */
+body {
+    background-color: #a4a6a2;
+    font-family: 'Segoe UI', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Capa semitransparente con el color primario */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-primario);
+    opacity: 0.18; /*  ajuste para hacer más o menos notorio */
+    z-index: -1;
+    pointer-events: none;
+}
+
+
+/*  Sidebar */
 .sidebar {
     width: 240px;
-    background-color: #0d6efd; /* Bootstrap primary */
+    background-color: var(--color-primario);
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
     position: sticky;
     top: 0;
+    border-radius: 0;
 }
+
 
 .sidebar h5 {
     font-weight: 600;
+    padding: 8px 16px;
 }
 
 .sidebar .nav-link {
     font-size: 16px;
     padding: 10px 16px;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    color: white;
+    border-radius: 8px;
 }
 
 .sidebar .nav-link:hover,
 .sidebar .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
 }
 
-/* 🧩 Tarjetas de estadísticas */
+/*  Tarjetas de estadísticas */
 .tarjeta-admin {
     border: none;
-    border-left: 8px solid rgba(255, 255, 255, 0.5);
-    transition: transform 0.2s;
+    border-left: 8px solid var(--color-primario);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
 }
 
 .tarjeta-admin:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
 }
 
-/* 🗺️ Mapa */
+/*  Botón estadísticas */
+.btn-ver-estadisticas {
+    background-color: var(--color-primario);
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.btn-ver-estadisticas:hover {
+    background-color: var(--color-primario);
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+}
+
+/* Mapa */
 .map-container {
-    height: 400px;
+    height: 500px;
     width: 100%;
     border-radius: 6px;
     background-color: #e9ecef;
     position: relative;
 }
-
-/* 📊 Botón estadísticas */
-.btn-ver-estadisticas {
-    font-weight: 500;
-    border-radius: 8px;
+.map-container {
+    border: 3px solid var(--color-primario); /* borde institucional */
 }
 
-/* 📍 Modal */
+/*  Modal */
 .modal-content {
     border-radius: 12px;
-    border: 1px solid #dee2e6;
+    border: 1px solid #1d74ca;
 }
 
 .modal-header {
-    background-color: #0d6efd;
+    background-color: var(--color-primario);
     color: white;
     border-bottom: none;
     border-radius: 12px 12px 0 0;
+    padding: 1rem 1.5rem;
 }
 
 .modal-body {
@@ -86,6 +133,8 @@ body {
         font-size: 1.5rem;
     }
 }
+
+/* 🏷️ Filtros */
 #filtroTipos label,
 #filtroEstados label {
     font-weight: normal;
@@ -94,14 +143,11 @@ body {
     border-radius: 6px;
     cursor: pointer;
 }
-.map-container {
-    height: 500px;
-    width: 100%;
-}
-/* 🔵 Panel flotante de filtros */
+
+/*  Panel flotante de filtros */
 .filtro-panel {
     position: absolute;
-    bottom: 100px; /* Aparece arriba del botón flotante */
+    bottom: 100px;
     right: 30px;
     width: 380px;
     z-index: 10000;
@@ -111,7 +157,7 @@ body {
     border-radius: 12px;
 }
 
-/* 🔘 Botón flotante de mostrar filtro */
+/*  Botón flotante de mostrar filtro */
 .filtro-btn {
     position: absolute;
     bottom: 30px;
@@ -122,19 +168,26 @@ body {
     display: none;
 }
 
-/* ✅ Mostrar el botón flotante en todas las pantallas */
+/*  Mostrar el botón flotante en todas las pantallas */
 #btnMostrarFiltro {
     display: block;
     position: fixed;
     bottom: 20px;
-    right: 20px; /* ⬅️ este es el correcto */
+    right: 20px;
     z-index: 9999;
-    background-color: #0d6efd;
+    background-color: var(--color-primario);
     color: white;
     border: none;
-    padding: 12px 16px;
+    padding: 14px 18px;
+    font-size: 20px;
     border-radius: 50%;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+#btnMostrarFiltro:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 /* 📱 Estilo más compacto en móviles */
@@ -143,14 +196,7 @@ body {
         padding: 10px 12px;
         font-size: 16px;
     }
-}
 
-.filtro-activo {
-    background-color: #ffc107 !important; /* Amarillo filtro activo */
-    color: #000;
-}
-/* 🟡 Ajuste responsive del panel de filtros */
-@media (max-width: 767px) {
     .filtro-panel {
         bottom: 90px;
         right: 10px;
@@ -166,3 +212,60 @@ body {
         margin-bottom: 6px;
     }
 }
+
+/*  Clases auxiliares personalizables */
+.bg-institucion {
+    background-color: var(--color-primario) !important;
+}
+
+.text-institucion {
+    color: var(--color-primario) !important;
+}
+
+.btn-institucion {
+    background-color: var(--color-primario);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.btn-institucion:hover {
+    background-color: #000000;
+    filter: brightness(1.1);
+    opacity: 0.95;
+}
+.encabezado-institucion {
+    background-color: var(--color-primario);
+    color: white;
+    padding: 16px 24px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    font-weight: bold;
+    border-left: 6px solid white;
+    display: inline-block;
+}
+
+.encabezado-institucion h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+}
+
+.encabezado-institucion i {
+    font-size: 1.5rem;
+}
+.card-header.d-flex {
+    background-color: rgba(8, 119, 111, 0.08); /* color primario suave */
+    border-bottom: 6px solid var(--color-primario);
+    color: var(--color-primario);
+    font-weight: 600;
+    font-size: 17px;
+}
+

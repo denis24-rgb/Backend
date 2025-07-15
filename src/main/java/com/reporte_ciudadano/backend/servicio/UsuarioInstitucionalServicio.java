@@ -34,9 +34,10 @@ public class UsuarioInstitucionalServicio {
         return usuarioRepo.findByCorreo(correo);
     }
 
-    public Optional<UsuarioInstitucional> obtenerPorUsuario(String usuario) {
-        return usuarioRepo.findByUsuario(usuario);
+    public Optional<UsuarioInstitucional> obtenerPorCorreoComoUsuario(String correo) {
+        return usuarioRepo.findByCorreo(correo);
     }
+
 
     public UsuarioInstitucional guardar(UsuarioInstitucional usuario) {
         // Validar correo
