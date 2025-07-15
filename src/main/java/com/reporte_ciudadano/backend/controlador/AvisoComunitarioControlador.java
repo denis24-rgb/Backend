@@ -17,8 +17,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.reporte_ciudadano.backend.modelo.AvisoComunitario;
 import com.reporte_ciudadano.backend.modelo.Notificacion;
+import com.reporte_ciudadano.backend.modelo.TipoAvisoComunitario;
 import com.reporte_ciudadano.backend.modelo.Usuario;
 import com.reporte_ciudadano.backend.repositorio.NotificacionRepositorio;
+import com.reporte_ciudadano.backend.repositorio.TipoAvisoComunitarioRepositorio;
 import com.reporte_ciudadano.backend.repositorio.UsuarioRepositorio;
 import com.reporte_ciudadano.backend.servicio.AvisoComunitarioServicio;
 
@@ -31,6 +33,8 @@ public class AvisoComunitarioControlador {
 
     @Autowired
     private UsuarioRepositorio usuarioRepo;
+    @Autowired
+    private TipoAvisoComunitarioRepositorio tipoAvisoRepo;
 
     @Autowired
     private NotificacionRepositorio notificacionRepositorio;
@@ -42,6 +46,7 @@ public class AvisoComunitarioControlador {
             Principal principal,
             @RequestParam(value = "ubicacion", required = false) String ubicacion,
             @RequestParam("descripcion") String descripcion,
+            @RequestParam("tipoAvisoId") Long tipoAvisoId,
             @RequestParam(value = "imagen", required = false) MultipartFile imagen) {
 
         try {
@@ -56,6 +61,11 @@ public class AvisoComunitarioControlador {
             AvisoComunitario aviso = new AvisoComunitario();
             aviso.setDescripcion(descripcion);
             aviso.setUsuario(usuario);
+            TipoAvisoComunitario tipo = tipoAvisoRepo.findById(tipoAvisoId).orElse(null);
+            if (tipo == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Tipo de aviso no encontrado.");
+            }
+            aviso.setTipoAviso(tipo);
 
             if (imagen != null && !imagen.isEmpty()) {
                 String nombreArchivo = UUID.randomUUID() + "_" + imagen.getOriginalFilename();
